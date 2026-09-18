@@ -6,11 +6,11 @@ import { errorHandler, notFound } from './middleware/error-handler';
 import { apiRouter } from './routes';
 import { googleAuthRouter } from './routes/auth/google';
 
-/** Vercel-hosted panel origins that the API must always accept. */
+/** Vercel-hosted panel origins that the API must always accept (production). */
 const PRODUCTION_PANEL_ORIGINS = [
-  'https://smmpanel.vercel.app',
-  'https://admin.smmpanel.vercel.app',
-  'https://super.smmpanel.vercel.app',
+  'https://smm-pannel-user.vercel.app',
+  'https://smm-pannel-admin.vercel.app',
+  'https://smmsupadmin.vercel.app',
 ] as const;
 
 function parseCorsOrigins(raw: string): string[] {
@@ -26,11 +26,12 @@ export function createApp(): express.Express {
   app.disable('x-powered-by');
   app.set('trust proxy', 1);
 
-  // Production panels live on subdomains of `smmpanel.vercel.app`; local panels
-  // run on localhost:3000-3002. Cookies carry credentials, so CORS must be an
-  // explicit allow-list — never a wildcard. The three production panel origins
-  // are always accepted irrespective of env vars; API_CORS_ORIGINS and the
-  // panel app URLs extend the list (e.g. when custom domains are added).
+  // Production panels live on their own Vercel domains (smm-pannel-user.vercel.app,
+  // smm-pannel-admin.vercel.app, smmsupadmin.vercel.app); local panels run on
+  // localhost:3000-3002. Cookies carry credentials, so CORS must be an explicit
+  // allow-list — never a wildcard. The three production panel origins are always
+  // accepted irrespective of env vars; API_CORS_ORIGINS and the panel app URLs
+  // extend the list (e.g. when custom domains are added).
   const allowedOrigins = new Set<string>();
   for (const origin of [
     ...PRODUCTION_PANEL_ORIGINS,

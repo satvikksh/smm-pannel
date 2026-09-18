@@ -5,10 +5,10 @@ one npm-workspaces monorepo:
 
 | App | Package | Local dev | Production |
 | --- | --- | --- | --- |
-| User panel | `@smm/user` | http://localhost:3000 | https://smmpanel.vercel.app |
-| Admin panel | `@smm/admin` | http://localhost:3001 | https://admin.smmpanel.vercel.app |
-| Super Admin panel | `@smm/super-admin` | http://localhost:3002 | https://super.smmpanel.vercel.app |
-| API (Express + MongoDB) | `@smm/api` | http://localhost:4000 | https://api.smmpanel.vercel.app |
+| User panel | `@smm/user` | http://localhost:3000 | https://smm-pannel-user.vercel.app |
+| Admin panel | `@smm/admin` | http://localhost:3001 | https://smm-pannel-admin.vercel.app |
+| Super Admin panel | `@smm/super-admin` | http://localhost:3002 | https://smmsupadmin.vercel.app |
+| API (Express + MongoDB) | `@smm/api` | http://localhost:4000 | https://smm-pannel-api.vercel.app |
 
 ## Local development
 
@@ -44,7 +44,7 @@ npm run build       # production build of all four apps
 ## Architecture overview
 
 - Every request from a panel to the API goes to `NEXT_PUBLIC_API_URL`
-  (e.g. `https://api.smmpanel.vercel.app`) + `/api/v1/...`.
+  (e.g. `https://smm-pannel-api.vercel.app`) + `/api/v1/...`.
 - Roles (user / admin / super-admin) are hard-separated with scoped session
   cookies (`smm_us_*`, `smm_ad_*`, `smm_sa_*`) enforced server-side.
 - Admin panels are multi-tenant: each admin is served from its own subdomain

@@ -34,7 +34,7 @@ function proxyApiBase(): string {
   if (process.env.NODE_ENV === 'production') {
     throw new Error(
       '[admin] The tenant proxy requires API_BASE_URL (server) or NEXT_PUBLIC_API_URL. ' +
-        'Set it in the Admin panel Vercel project environment (e.g. https://api.smmpanel.vercel.app).',
+        'Set it in the Admin panel Vercel project environment (e.g. https://smm-pannel-api.vercel.app).',
     );
   }
   return 'http://localhost:4000';

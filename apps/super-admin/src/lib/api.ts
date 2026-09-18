@@ -1,6 +1,6 @@
 /**
  * API origin used by the browser on every request, resolved from
- * `NEXT_PUBLIC_API_URL` (e.g. `https://api.smmpanel.vercel.app` in production,
+ * `NEXT_PUBLIC_API_URL` (e.g. `https://smm-pannel-api.vercel.app` in production,
  * `http://localhost:4000` in local dev). `NEXT_PUBLIC_API_BASE_URL` is kept as
  * a legacy alias.
  *
@@ -35,7 +35,7 @@ export function getApiBase(): string {
       '[super-admin] NEXT_PUBLIC_API_URL is not configured.\n' +
         'Add it to the Super Admin Vercel project (Vercel → Super Admin project → ' +
         'Settings → Environment Variables):\n' +
-        'NEXT_PUBLIC_API_URL=https://api.smmpanel.vercel.app',
+        'NEXT_PUBLIC_API_URL=https://smm-pannel-api.vercel.app',
     );
   }
   return API_BASE;

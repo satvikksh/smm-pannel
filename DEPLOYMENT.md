@@ -8,10 +8,10 @@ env vars and domain. There is no "one server running everything".
 
 | App | Package | Root Directory | Local dev | Production URL |
 | --- | --- | --- | --- | --- |
-| User panel | `@smm/user` | `apps/user` | `next dev --port 3000` | `https://smmpanel.vercel.app` |
-| Admin panel | `@smm/admin` | `apps/admin` | `next dev --port 3001` | `https://admin.smmpanel.vercel.app` |
-| Super Admin panel | `@smm/super-admin` | `apps/super-admin` | `next dev --port 3002` | `https://super.smmpanel.vercel.app` |
-| API | `@smm/api` | `apps/api` | `tsx watch src/index.ts` (:4000) | `https://api.smmpanel.vercel.app` |
+| User panel | `@smm/user` | `apps/user` | `next dev --port 3000` | `https://smm-pannel-user.vercel.app` |
+| Admin panel | `@smm/admin` | `apps/admin` | `next dev --port 3001` | `https://smm-pannel-admin.vercel.app` |
+| Super Admin panel | `@smm/super-admin` | `apps/super-admin` | `next dev --port 3002` | `https://smmsupadmin.vercel.app` |
+| API | `@smm/api` | `apps/api` | `tsx watch src/index.ts` (:4000) | `https://smm-pannel-api.vercel.app` |
 
 All requests to the API go to `NEXT_PUBLIC_API_URL` (a build-time, browser-visible
 *non-secret* string) `/api/v1/...`. Cookies carry the sessions (`HttpOnly`);
@@ -23,7 +23,7 @@ secrets never reach the browser.
 2. **MongoDB Atlas** — a cluster + a database user; copy the connection string.
 3. **Google Cloud Console** (User panel Google login, optional) — an OAuth client
    whose **Authorized redirect URI** is exactly:
-   `https://api.smmpanel.vercel.app/api/auth/google/callback`
+`https://smm-pannel-api.vercel.app/api/auth/google/callback`
 4. A local MongoDB (only for local development; `mongodb://127.0.0.1:27017/smm_panel`).
 
 ## Deploying
@@ -48,10 +48,10 @@ catch-all route to `api/index.ts`.
 
 The production URLs are Vercel-hosted subdomains of your Vercel team:
 
-- `smmpanel.vercel.app` → User project
-- `admin.smmpanel.vercel.app` → Admin project
-- `super.smmpanel.vercel.app` → Super Admin project
-- `api.smmpanel.vercel.app` → API project
+- `smm-pannel-user.vercel.app` → User project
+- `smm-pannel-admin.vercel.app` → Admin project
+- `smmsupadmin.vercel.app` → Super Admin project
+- `smm-pannel-api.vercel.app` → API project
 
 To use your own domain (recommended for Admin tenants), add it as a custom domain
 per project and point its DNS (see Vercel's per-project instructions). For per-admin
@@ -67,10 +67,10 @@ inlined at build time). The API project reads everything server-side.
 
 | Variable | User | Admin | Super Admin | API | Notes |
 | --- | --- | --- | --- | --- | --- |
-| `NEXT_PUBLIC_API_URL` | ✅ | ✅ | ✅ | – | `https://api.smmpanel.vercel.app` (no `/api/v1`; panels append it) |
-| `NEXT_PUBLIC_USER_APP_URL` | – | – | – | ✅ | `https://smmpanel.vercel.app` |
-| `NEXT_PUBLIC_ADMIN_APP_URL` | – | – | – | ✅ | `https://admin.smmpanel.vercel.app` |
-| `NEXT_PUBLIC_SUPER_ADMIN_APP_URL` | – | – | – | ✅ | `https://super.smmpanel.vercel.app` |
+| `NEXT_PUBLIC_API_URL` | ✅ | ✅ | ✅ | – | `https://smm-pannel-api.vercel.app` (no `/api/v1`; panels append it) |
+| `NEXT_PUBLIC_USER_APP_URL` | – | – | – | ✅ | `https://smm-pannel-user.vercel.app` |
+| `NEXT_PUBLIC_ADMIN_APP_URL` | – | – | – | ✅ | `https://smm-pannel-admin.vercel.app` |
+| `NEXT_PUBLIC_SUPER_ADMIN_APP_URL` | – | – | – | ✅ | `https://smmsupadmin.vercel.app` |
 | `NEXT_PUBLIC_ROOT_DOMAIN` | – | ✅ | – | – | `localhost` in dev; your base domain in prod |
 | `ROOT_DOMAIN` | – | ✅ | – | ✅ | server-side alias of the above |
 | `API_BASE_URL` | – | ✅ | – | – | server-side API origin for the Admin tenant proxy |
@@ -85,7 +85,7 @@ inlined at build time). The API project reads everything server-side.
 | `SUPER_ADMIN_PASSWORD` | – | – | – | ✅ | ≥ 8 chars; sets the Super Admin password |
 | `GOOGLE_CLIENT_ID` | – | – | – | ✅ | Google OAuth (User panel) |
 | `GOOGLE_CLIENT_SECRET` | – | – | – | ✅ | Google OAuth (User panel) |
-| `GOOGLE_REDIRECT_URI` | – | – | – | ✅ | `https://api.smmpanel.vercel.app/api/auth/google/callback` |
+| `GOOGLE_REDIRECT_URI` | – | – | – | ✅ | `https://smm-pannel-api.vercel.app/api/auth/google/callback` |
 
 Rules that keep this safe:
 
@@ -98,13 +98,41 @@ Rules that keep this safe:
   Settings → Environment Variables), e.g. for the Super Admin panel:
 
   ```
-  NEXT_PUBLIC_API_URL=https://api.smmpanel.vercel.app
+  NEXT_PUBLIC_API_URL=https://smm-pannel-api.vercel.app
   ```
 
   (User and Admin panels use the same value; the API project does not need it.
   Secrets are never pre-fixed `NEXT_PUBLIC_` and never end up there.)
 - The API project must always know the three panel origins (always included in the
   CORS allow-list regardless of env, then overridden/extended by the env values).
+
+### 3b. API runtime environment (REQUIRED — the API crashes without these)
+
+The API's Vercel function validates its environment on **first request**. If any
+required variable is missing, the API answers a clear JSON 500 naming the missing
+variable (it no longer dies with an opaque `500 FUNCTION_INVOCATION_FAILED`).
+
+Set in the **smm-pannel-api** Vercel project (Settings → Environment Variables →
+Production), as a minimum:
+
+```
+MONGODB_URI=<Atlas connection string>
+SUPER_ADMIN_EMAIL=<email>
+SUPER_ADMIN_PASSWORD=<password, ≥ 8 chars>
+JWT_ACCESS_SECRET=<random ≥ 32 chars>
+JWT_REFRESH_SECRET=<random ≥ 32 chars>
+COOKIE_SECRET=<random ≥ 32 chars>
+```
+
+The Atlas network access list must allow the Vercel region's egress IPs (or the
+cluster must be reachable from Vercel). The seed is idempotent: the Super Admin
+account is upserted per deployment, it is never duplicated.
+
+> Why this is serverless-safe: `api/index.ts` performs **no work at module
+> evaluation** — the express app, database connection and seed all happen on the
+> first invocation and are reused per warm instance. A missing env var or an
+> unreachable database therefore surfaces as a JSON error, never as a crash that
+> breaks every request.
 
 ### 4. Deploy order
 
@@ -137,7 +165,7 @@ secrets never land in the apps.
   (`/api/auth/google`); the client secret never reaches the browser.
 - `SUPER_ADMIN_EMAIL/PASSWORD` authenticate only on the Super Admin project.
 - **Production**: set-cookie uses `Secure; SameSite=None` so the browser sends the
-  cookies to `api.smmpanel.vercel.app` from any sibling panel. Development stays
+  cookies to `smm-pannel-api.vercel.app` from any sibling panel. Development stays
   `SameSite=Lax` over http://localhost.
 - The Google OAuth state/redirect cookies use the same `Secure` policy and are
   scoped to `/api/auth` on the API origin.
@@ -147,8 +175,8 @@ secrets never land in the apps.
 The API accepts requests with credentials from an explicit allow-list — no
 wildcard:
 
-- `https://smmpanel.vercel.app`, `https://admin.smmpanel.vercel.app`,
-  `https://super.smmpanel.vercel.app` (always enabled)
+- `https://smm-pannel-user.vercel.app`, `https://smm-pannel-admin.vercel.app`,
+  `https://smmsupadmin.vercel.app` (always enabled)
 - `http://localhost:3000/3001/3002` and `http://127.0.0.1:3000/3001/3002` (dev)
 - Any origin from `API_CORS_ORIGINS` (optional extras)
 - Any subdomain of `NEXT_PUBLIC_ROOT_DOMAIN`/`ROOT_DOMAIN` (per-admin tenants)
@@ -173,12 +201,12 @@ Requires the Vercel dashboard / live network (run these yourself after deploying
 and mark UNVERIFIED below):
 
 - [ ] The four production URLs answer 200 inside their domains
-- [ ] `https://api.smmpanel.vercel.app/health` → `{"status":"ok",...}`
-- [ ] User login/register hits `https://api.smmpanel.vercel.app/api/v1` (check the
-      browser network tab; cookie domain is `api.smmpanel.vercel.app`)
+- [ ] `https://smm-pannel-api.vercel.app/health` → `{"status":"ok",...}`
+- [ ] User login/register hits `https://smm-pannel-api.vercel.app/api/v1` (check the
+      browser network tab; cookie domain is `smm-pannel-api.vercel.app`)
 - [ ] Google login round-trip completes (redirect URI authorised in Google console)
-- [ ] Super Admin login at `https://super.smmpanel.vercel.app`
-- [ ] Admin tenant resolution on `https://admin.smmpanel.vercel.app`
+- [ ] Super Admin login at `https://smmsupadmin.vercel.app`
+- [ ] Admin tenant resolution on `https://smm-pannel-admin.vercel.app`
 - [ ] Sealed secrets: `SUPER_ADMIN_PASSWORD`/`JWT_*` never re-appear in the panel apps
 - [ ] Custom domains (if used) still pass CORS — adjust `API_CORS_ORIGINS`/app URLs
 - [ ] MongoDB Atlas network access allows Vercel function IPs (or the cluster is
