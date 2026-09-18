@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Button, Icons } from '@smm/ui';
-import { API_BASE } from '@/lib/api';
+import { getApiBase } from '@/lib/api';
 
 const GOOGLE_ERROR_MESSAGES: Record<string, string> = {
   cancelled: 'Google sign-in was cancelled.',
@@ -13,9 +13,10 @@ const GOOGLE_ERROR_MESSAGES: Record<string, string> = {
 };
 
 /**
- * "Continue with Google" button for the User panel. The back end lives at
- * `API_BASE` (NEXT_PUBLIC_API_URL) and OAuth runs entirely through the API
- * (`/api/auth/google`), so the Google client secret never reaches the browser.
+ * "Continue with Google" button for the User panel. The back end lives at the
+ * configured API origin (`getApiBase()`, from NEXT_PUBLIC_API_URL) and OAuth
+ * runs entirely through the API (`/api/auth/google`), so the Google client
+ * secret never reaches the browser.
  *
  * The redirect target (`?google_error=...`) is read on mount so a failed or
  * cancelled flow shows the right message, then tidied from the address bar.
@@ -38,16 +39,16 @@ export function GoogleAuthButton({ redirect = '/login' }: { redirect?: '/login' 
     setError(null);
     setBusy(true);
     try {
+      const base = getApiBase();
       // Reachability probe. A failed fetch means the API (and therefore OAuth)
       // is unreachable; the browser is only pointed at Google once the API is
       // confirmed to be alive and can set the state cookie.
-      await fetch(`${API_BASE}/health`, { method: 'HEAD', credentials: 'include' });
+      await fetch(`${base}/health`, { method: 'HEAD', credentials: 'include' });
+      window.location.assign(`${base}/api/auth/google?redirect=${encodeURIComponent(redirect)}`);
     } catch {
       setError('Unable to connect to authentication server.');
       setBusy(false);
-      return;
     }
-    window.location.assign(`${API_BASE}/api/auth/google?redirect=${encodeURIComponent(redirect)}`);
   }, [busy, redirect]);
 
   return (

@@ -19,7 +19,18 @@ import { subdomainSlugFromHost } from '@smm/types';
  */
 const ROOT_DOMAIN = process.env.ROOT_DOMAIN ?? process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'localhost';
 
-function defaultApiBase(): string {
+/**
+ * Resolve the API origin the proxy talks to. Resolved per request (not at
+ * module load) so the production build never depends on it; a missing config
+ * surfaces here — at the first tenant-resolve call — not during build. The
+ * caller fails open on any error, per the comment above.
+ */
+function proxyApiBase(): string {
+  const configured =
+    process.env.API_BASE_URL ??
+    process.env.NEXT_PUBLIC_API_URL ??
+    process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (configured) return configured;
   if (process.env.NODE_ENV === 'production') {
     throw new Error(
       '[admin] The tenant proxy requires API_BASE_URL (server) or NEXT_PUBLIC_API_URL. ' +
@@ -28,12 +39,6 @@ function defaultApiBase(): string {
   }
   return 'http://localhost:4000';
 }
-
-const API_BASE =
-  process.env.API_BASE_URL ??
-  process.env.NEXT_PUBLIC_API_URL ??
-  process.env.NEXT_PUBLIC_API_BASE_URL ??
-  defaultApiBase();
 
 interface TenantResolution {
   found: boolean;
@@ -46,8 +51,9 @@ interface TenantResolution {
 
 async function resolveTenant(host: string): Promise<TenantResolution | null> {
   try {
+    const base = proxyApiBase();
     const res = await fetch(
-      `${API_BASE}/api/v1/tenant/resolve?host=${encodeURIComponent(host)}`,
+      `${base}/api/v1/tenant/resolve?host=${encodeURIComponent(host)}`,
       { cache: 'no-store', headers: { accept: 'application/json' } },
     );
     if (!res.ok) return null;

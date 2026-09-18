@@ -1,24 +1,45 @@
 /**
- * API origin used by the browser on every request. Intended to be set via
- * `NEXT_PUBLIC_API_URL` (e.g. `https://api.smmpanel.vercel.app`, or
+ * API origin used by the browser on every request, resolved from
+ * `NEXT_PUBLIC_API_URL` (e.g. `https://api.smmpanel.vercel.app` in production,
  * `http://localhost:4000` in local dev). `NEXT_PUBLIC_API_BASE_URL` is kept as
- * a legacy alias. A production build without the API URL fails loudly instead
- * of silently dialing localhost.
+ * a legacy alias.
+ *
+ * Resolution is deliberately lazy:
+ *
+ *   - The value is only read at the moment a request is actually made from a
+ *     client effect / event handler — never during static prerendering — so a
+ *     production build succeeds even before the environment variable is wired
+ *     into the Vercel project.
+ *   - A production request made without a configured URL fails loudly with
+ *     installation instructions instead of silently dialing localhost.
+ *   - Local development (`next dev`) falls back to http://localhost:4000.
  */
-function defaultApiBase(): string {
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error(
-      '[super-admin] NEXT_PUBLIC_API_URL is not configured. Set it in the Super Admin ' +
-        'panel Vercel project environment (e.g. https://api.smmpanel.vercel.app).',
-    );
-  }
-  return 'http://localhost:4000';
-}
-
-export const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? defaultApiBase();
 
 export const ROLE = 'super-admin';
+
+const DEV_API_BASE = 'http://localhost:4000';
+
+function apiBaseFromEnv(): string {
+  const fromEnv = process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (fromEnv) return fromEnv;
+  if (process.env.NODE_ENV === 'production') return '';
+  return DEV_API_BASE;
+}
+
+const API_BASE = apiBaseFromEnv();
+
+/** Resolve the configured API origin, failing loudly when one is missing. */
+export function getApiBase(): string {
+  if (!API_BASE) {
+    throw new Error(
+      '[super-admin] NEXT_PUBLIC_API_URL is not configured.\n' +
+        'Add it to the Super Admin Vercel project (Vercel → Super Admin project → ' +
+        'Settings → Environment Variables):\n' +
+        'NEXT_PUBLIC_API_URL=https://api.smmpanel.vercel.app',
+    );
+  }
+  return API_BASE;
+}
 
 interface ErrorEnvelope {
   code?: string;
@@ -46,17 +67,18 @@ export class ApiError extends Error {
 }
 
 async function request(path: string, init: RequestInit, retryOn401: boolean): Promise<Response> {
+  const base = getApiBase();
   const headers = new Headers(init.headers);
   if (init.body && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
-  const res = await fetch(`${API_BASE}/api/v1${path}`, {
+  const res = await fetch(`${base}/api/v1${path}`, {
     ...init,
     headers,
     credentials: 'include',
   });
   if (res.status === 401 && retryOn401) {
-    await fetch(`${API_BASE}/api/v1/auth/${ROLE}/refresh`, {
+    await fetch(`${base}/api/v1/auth/${ROLE}/refresh`, {
       method: 'POST',
       credentials: 'include',
     }).catch(() => undefined);

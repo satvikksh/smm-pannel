@@ -91,8 +91,18 @@ Rules that keep this safe:
 
 - **No secrets in `NEXT_PUBLIC_*`.** Anything prefixed `NEXT_PUBLIC_` is inlined
   into the browser bundle. Secrets live only in the API project (server-side).
-- If any **panel** project builds without `NEXT_PUBLIC_API_URL`, the build **fails
-  loudly** with a message — it never silently dials localhost in production.
+- Every panel reads its API origin from `NEXT_PUBLIC_API_URL`. It is not read
+  during static prerendering — builds succeed even before the variable is wired
+  in — but the **first API request** made without it fails loudly with
+  instructions. Configure it in each panel project (Vercel → *panel* project →
+  Settings → Environment Variables), e.g. for the Super Admin panel:
+
+  ```
+  NEXT_PUBLIC_API_URL=https://api.smmpanel.vercel.app
+  ```
+
+  (User and Admin panels use the same value; the API project does not need it.
+  Secrets are never pre-fixed `NEXT_PUBLIC_` and never end up there.)
 - The API project must always know the three panel origins (always included in the
   CORS allow-list regardless of env, then overridden/extended by the env values).
 
