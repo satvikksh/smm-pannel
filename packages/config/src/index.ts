@@ -48,7 +48,10 @@ export function resolveRootDir(start?: string): string {
  */
 export function loadRootEnv(): void {
   if (loaded) return;
-  const root = resolveRootDir();
+  const root = resolveRootDirOrNull();
+  loaded = true;
+  if (!root) return;
+
   const baseFile = join(root, '.env');
   const localFile = join(root, '.env.local');
 
@@ -67,7 +70,20 @@ export function loadRootEnv(): void {
     }
     process.env[key] = value;
   }
-  loaded = true;
+}
+
+/**
+ * Like {@link resolveRootDir} but does NOT throw when the monorepo root files
+ * are absent. This matters on Vercel/Vercel Functions: the bundle directory has
+ * no `.env`/`turbo.json`, and configuration must come entirely from the process
+ * environment that Vercel injects per project.
+ */
+function resolveRootDirOrNull(): string | null {
+  try {
+    return resolveRootDir();
+  } catch {
+    return null;
+  }
 }
 
 export function getEnv(key: string): string | undefined {
@@ -108,6 +124,11 @@ export interface Environment {
   googleClientSecret: string;
   /** Absolute Google OAuth redirect (callback) URI. */
   googleRedirectUri: string;
+  /**
+   * Extra comma-separated CORS origins accepted by the API in addition to the
+   * three panel app URLs and localhost development origins. Empty by default.
+   */
+  apiCorsOrigins: string;
 }
 
 function number(value: string | undefined, fallback: number, name: string): number {
@@ -139,6 +160,7 @@ export function getEnvironment(): Environment {
     googleClientId: getEnv('GOOGLE_CLIENT_ID') ?? '',
     googleClientSecret: getEnv('GOOGLE_CLIENT_SECRET') ?? '',
     googleRedirectUri: getEnv('GOOGLE_REDIRECT_URI') ?? '',
+    apiCorsOrigins: getEnv('API_CORS_ORIGINS') ?? '',
   };
 }
 

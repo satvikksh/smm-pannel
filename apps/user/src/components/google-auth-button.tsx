@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Button, Icons } from '@smm/ui';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:4000';
+import { API_BASE } from '@/lib/api';
 
 const GOOGLE_ERROR_MESSAGES: Record<string, string> = {
   cancelled: 'Google sign-in was cancelled.',
@@ -14,9 +13,9 @@ const GOOGLE_ERROR_MESSAGES: Record<string, string> = {
 };
 
 /**
- * "Continue with Google" button for the User panel. The back end is on
- * localhost:4000 and OAuth runs entirely through the API (`/api/auth/google`),
- * so the Google client secret never reaches the browser.
+ * "Continue with Google" button for the User panel. The back end lives at
+ * `API_BASE` (NEXT_PUBLIC_API_URL) and OAuth runs entirely through the API
+ * (`/api/auth/google`), so the Google client secret never reaches the browser.
  *
  * The redirect target (`?google_error=...`) is read on mount so a failed or
  * cancelled flow shows the right message, then tidied from the address bar.

@@ -20,11 +20,17 @@ export interface CookieOptions {
 }
 
 export function buildCookieOptions(env: { nodeEnv: string; apiBaseUrl: string }): CookieOptions {
-  const secure = env.nodeEnv === 'production';
+  // Production panels and the API are served from sibling origins of the same
+  // registrable domain with different sub/paths and possibly custom domains
+  // (user/admin/super/api), so cross-site delivery is required:
+  // SameSite=None + Secure. Https also implies Secure regardless of NODE_ENV so
+  // preview/Vercel deployments behave the same as `production`.
+  const isHttps = env.apiBaseUrl.startsWith('https://');
+  const secure = env.nodeEnv === 'production' || isHttps;
   return {
     httpOnly: true,
     secure,
-    sameSite: 'lax',
+    sameSite: secure ? 'none' : 'lax',
     path: '/',
   };
 }

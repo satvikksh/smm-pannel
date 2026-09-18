@@ -1,4 +1,22 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:4000';
+/**
+ * API origin used by the browser on every request. Intended to be set via
+ * `NEXT_PUBLIC_API_URL` (e.g. `https://api.smmpanel.vercel.app`, or
+ * `http://localhost:4000` in local dev). `NEXT_PUBLIC_API_BASE_URL` is kept as
+ * a legacy alias. A production build without the API URL fails loudly instead
+ * of silently dialing localhost.
+ */
+function defaultApiBase(): string {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      '[super-admin] NEXT_PUBLIC_API_URL is not configured. Set it in the Super Admin ' +
+        'panel Vercel project environment (e.g. https://api.smmpanel.vercel.app).',
+    );
+  }
+  return 'http://localhost:4000';
+}
+
+export const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? defaultApiBase();
 
 export const ROLE = 'super-admin';
 

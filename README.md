@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SMM Panel
 
-## Getting Started
+Multi-tenant SMM (social media marketing) panel. Four independent applications in
+one npm-workspaces monorepo:
 
-First, run the development server:
+| App | Package | Local dev | Production |
+| --- | --- | --- | --- |
+| User panel | `@smm/user` | http://localhost:3000 | https://smmpanel.vercel.app |
+| Admin panel | `@smm/admin` | http://localhost:3001 | https://admin.smmpanel.vercel.app |
+| Super Admin panel | `@smm/super-admin` | http://localhost:3002 | https://super.smmpanel.vercel.app |
+| API (Express + MongoDB) | `@smm/api` | http://localhost:4000 | https://api.smmpanel.vercel.app |
+
+## Local development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # fill in real values (see .env.example comments)
+npm run dev                  # syncs env vars, then starts all four apps (turbo)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Individual apps:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run env:sync             # regenerate apps/*/.env.local from the root env
+npm run dev:user             # user panel on :3000
+npm run dev:admin            # admin panel on :3001
+npm run dev:super-admin      # super admin panel on :3002
+npm run dev:api              # API on :4000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The root `.env` / `.env.local` is the single source of configuration.
+`scripts/sync-env.mjs` copies only non-secret `NEXT_PUBLIC_*`, `API_BASE_URL` and
+`ROOT_DOMAIN` into each app — secrets never reach the apps or the browser.
 
-## Learn More
+## Checks
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run typecheck   # tsc --noEmit across all workspaces
+npm run lint        # eslint across all workspaces
+npm run test        # vitest (API suite, incl. role separation)
+npm run build       # production build of all four apps
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Architecture overview
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Every request from a panel to the API goes to `NEXT_PUBLIC_API_URL`
+  (e.g. `https://api.smmpanel.vercel.app`) + `/api/v1/...`.
+- Roles (user / admin / super-admin) are hard-separated with scoped session
+  cookies (`smm_us_*`, `smm_ad_*`, `smm_sa_*`) enforced server-side.
+- Admin panels are multi-tenant: each admin is served from its own subdomain
+  (see `apps/admin/src/proxy.ts` and the API `/api/v1/tenant/resolve`).
+- Google OAuth is available on the User panel only and runs entirely through the
+  API so the client secret never reaches the browser.
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for the per-project Vercel Root Directories,
+environment variables, domain routing, cookies/CORS and the verification checklist.

@@ -50,7 +50,7 @@ next-env.d.ts
 .turbo/
 
 # generated per-app env (produced by scripts/sync-env.mjs)
-apps/web/.env.local
+apps/user/.env.local
 apps/admin/.env.local
 apps/super-admin/.env.local
 apps/api/.env.local

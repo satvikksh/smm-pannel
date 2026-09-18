@@ -6,12 +6,47 @@ import { errorHandler, notFound } from './middleware/error-handler';
 import { apiRouter } from './routes';
 import { googleAuthRouter } from './routes/auth/google';
 
+/** Vercel-hosted panel origins that the API must always accept. */
+const PRODUCTION_PANEL_ORIGINS = [
+  'https://smmpanel.vercel.app',
+  'https://admin.smmpanel.vercel.app',
+  'https://super.smmpanel.vercel.app',
+] as const;
+
+function parseCorsOrigins(raw: string): string[] {
+  return raw
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+}
+
 export function createApp(): express.Express {
   const env = getEnvironment();
   const app = express();
   app.disable('x-powered-by');
+  app.set('trust proxy', 1);
 
-  const allowedOrigins = [env.userAppUrl, env.adminAppUrl, env.superAdminAppUrl];
+  // Production panels live on subdomains of `smmpanel.vercel.app`; local panels
+  // run on localhost:3000-3002. Cookies carry credentials, so CORS must be an
+  // explicit allow-list — never a wildcard. The three production panel origins
+  // are always accepted irrespective of env vars; API_CORS_ORIGINS and the
+  // panel app URLs extend the list (e.g. when custom domains are added).
+  const allowedOrigins = new Set<string>();
+  for (const origin of [
+    ...PRODUCTION_PANEL_ORIGINS,
+    env.userAppUrl,
+    env.adminAppUrl,
+    env.superAdminAppUrl,
+    ...parseCorsOrigins(env.apiCorsOrigins),
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:3002',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3001',
+    'http://127.0.0.1:3002',
+  ]) {
+    if (origin) allowedOrigins.add(origin);
+  }
 
   // Admin panels are served from per-admin subdomains (e.g.
   // `ram-kumar.smmpannel.com` or `ram-kumar.localhost`), so any host that is a
@@ -32,9 +67,9 @@ export function createApp(): express.Express {
   app.use(
     cors({
       origin(origin, callback) {
-        // Allow same-origin / non-browser requests as well as the three apps
+        // Allow same-origin / non-browser requests as well as the known panels
         // and any admin subdomain of the configured root domain.
-        if (!origin || allowedOrigins.includes(origin) || isRootSubdomainOrigin(origin)) {
+        if (!origin || allowedOrigins.has(origin) || isRootSubdomainOrigin(origin)) {
           callback(null, true);
           return;
         }

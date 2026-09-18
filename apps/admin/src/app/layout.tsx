@@ -1,9 +1,8 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { AdminPanelThemeProvider, AdminPanelThemeScript, ToastProvider } from '@smm/ui';
+import { API_BASE } from '@/lib/api';
 import './globals.css';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:4000';
 
 export const metadata: Metadata = {
   title: {

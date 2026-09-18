@@ -11,7 +11,7 @@
   "scripts": {
     "env:sync": "node scripts/sync-env.mjs",
     "dev": "node scripts/sync-env.mjs && turbo run dev",
-    "dev:web": "node scripts/sync-env.mjs && npm run dev -w @smm/web",
+    "dev:user": "node scripts/sync-env.mjs && npm run dev -w @smm/user",
     "dev:admin": "node scripts/sync-env.mjs && npm run dev -w @smm/admin",
     "dev:super-admin": "node scripts/sync-env.mjs && npm run dev -w @smm/super-admin",
     "dev:api": "node scripts/sync-env.mjs && npm run dev -w @smm/api",

@@ -18,8 +18,22 @@ import { subdomainSlugFromHost } from '@smm/types';
  * on every request, so the panel is never made *less* safe by this gate.
  */
 const ROOT_DOMAIN = process.env.ROOT_DOMAIN ?? process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'localhost';
+
+function defaultApiBase(): string {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      '[admin] The tenant proxy requires API_BASE_URL (server) or NEXT_PUBLIC_API_URL. ' +
+        'Set it in the Admin panel Vercel project environment (e.g. https://api.smmpanel.vercel.app).',
+    );
+  }
+  return 'http://localhost:4000';
+}
+
 const API_BASE =
-  process.env.API_BASE_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:4000';
+  process.env.API_BASE_URL ??
+  process.env.NEXT_PUBLIC_API_URL ??
+  process.env.NEXT_PUBLIC_API_BASE_URL ??
+  defaultApiBase();
 
 interface TenantResolution {
   found: boolean;
