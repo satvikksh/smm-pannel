@@ -14,7 +14,7 @@ function describeAuthError(err: unknown): string {
     if (err.status >= 500) return 'The server encountered an error. Please try again.';
     return err.message;
   }
-  return 'Cannot reach the API. Check that the backend on port 4000 is running and try again.';
+  return 'Cannot connect to the API server. Check your connection and try again.';
 }
 
 export default function LoginPage() {

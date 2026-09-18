@@ -13,7 +13,7 @@ function describeAuthError(err: unknown): string {
     // (invalid credentials, missing license, invalid/expired/suspended key).
     return err.message;
   }
-  return 'Cannot reach the API. Check that the backend on port 4000 is running and try again.';
+  return 'Cannot connect to the API server. Check your connection and try again.';
 }
 
 export default function LoginPage() {

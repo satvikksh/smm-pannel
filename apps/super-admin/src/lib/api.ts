@@ -72,11 +72,23 @@ async function request(path: string, init: RequestInit, retryOn401: boolean): Pr
   if (init.body && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
-  const res = await fetch(`${base}/api/v1${path}`, {
-    ...init,
-    headers,
-    credentials: 'include',
-  });
+  const method = init.method ?? 'GET';
+  const url = `${base}/api/v1${path}`;
+  // Safe diagnostic: the API base is non-secret public configuration, and only
+  // the method / path / status are logged — never credentials, cookies or tokens.
+  console.debug(`[api] ${method} ${url}`);
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      ...init,
+      headers,
+      credentials: 'include',
+    });
+  } catch (err) {
+    console.debug(`[api] ${method} ${url} -> network/cors failure`);
+    throw err;
+  }
+  console.debug(`[api] ${method} ${url} -> ${res.status} ${res.statusText}`);
   if (res.status === 401 && retryOn401) {
     await fetch(`${base}/api/v1/auth/${ROLE}/refresh`, {
       method: 'POST',
