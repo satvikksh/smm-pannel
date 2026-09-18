@@ -1,26 +1,36 @@
 {
-  "name": "smmpannel",
-  "version": "0.1.0",
+  "name": "smm-panel",
+  "version": "1.0.0",
   "private": true,
+  "description": "SMM Panel monorepo — User, Admin, Super Admin, API",
+  "packageManager": "npm@11.19.1",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "next": "16.3.5",
-    "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "env:sync": "node scripts/sync-env.mjs",
+    "dev": "node scripts/sync-env.mjs && turbo run dev",
+    "dev:web": "node scripts/sync-env.mjs && npm run dev -w @smm/web",
+    "dev:admin": "node scripts/sync-env.mjs && npm run dev -w @smm/admin",
+    "dev:super-admin": "node scripts/sync-env.mjs && npm run dev -w @smm/super-admin",
+    "dev:api": "node scripts/sync-env.mjs && npm run dev -w @smm/api",
+    "build": "node scripts/sync-env.mjs && turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "clean": "turbo run clean && rm -rf node_modules/.cache"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.3.5",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "@eslint/js": "^9.13.0",
+    "@types/node": "^20.14.0",
+    "eslint": "^9.13.0",
+    "globals": "^15.11.0",
+    "turbo": "^2.3.3",
+    "typescript": "^5.6.2",
+    "typescript-eslint": "^8.10.0"
+  },
+  "engines": {
+    "node": ">=20.9.0"
   }
 }

@@ -1,5 +1,3 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
 /node_modules
 /.pnp
@@ -12,10 +10,13 @@
 
 # testing
 /coverage
+apps/api/coverage
 
 # next.js
 /.next/
 /out/
+apps/*/.next/
+apps/*/out/
 
 # production
 /build
@@ -31,7 +32,12 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env
+.env.local
+.env.*.local
+
+# keep template
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +45,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# turbo
+.turbo/
+
+# generated per-app env (produced by scripts/sync-env.mjs)
+apps/web/.env.local
+apps/admin/.env.local
+apps/super-admin/.env.local
+apps/api/.env.local
