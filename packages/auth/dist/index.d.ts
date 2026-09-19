@@ -1,0 +1,14 @@
+export type { AuthContext, AuthedRequest } from './context';
+export { ipFrom } from './context';
+export { requireRole, requireSuperAdmin, requireAdmin, requireUser, requireRoleSession, requireAdminSession, requireAnyRole, } from './guards';
+export { issueSession, refreshSession, revokeSession, authorize, authorizeSession, resolveSessionUser, assertAccountAccess, assertUserCanAuthenticate, clearSessionCookies, loadLicenseForAdmin, toEnv, toSafeUser, accountError, licenseError, requestedAdminSubdomain, } from './session';
+export { toLicense, licenseState, adminLicenseVerdict } from './serialize';
+export type { Env, AuthorizedIdentity } from './session';
+export type { LicenseAdminSubdomain } from './serialize';
+export { generateUniqueSubdomainSlug, buildSubdomainAssignment, subdomainHostForSlug, assertAdminSubdomainMatches, subdomainSlugFromHost, isValidSubdomainSlug, } from './subdomain';
+export type { SubdomainAssignment } from './subdomain';
+export { seedSuperAdmin, ensureSuperAdminUser } from './seed';
+export { verifySuperAdminCredentials, isSuperAdminEmail } from './super-admin';
+export { writeAuditLog } from './audit';
+export type { AuditEntry } from './audit';
+export { tenantAdminIdOf, isSubAdmin, resolveTenantAdminUser, assertMainAdmin, assertAdminScope, } from './tenant';
