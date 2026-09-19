@@ -30,7 +30,7 @@ function proxyApiBase(): string {
     process.env.API_BASE_URL ??
     process.env.NEXT_PUBLIC_API_URL ??
     process.env.NEXT_PUBLIC_API_BASE_URL;
-  if (configured) return configured;
+  if (configured) return configured.replace(/\/+$/, '');
   if (process.env.NODE_ENV === 'production') {
     throw new Error(
       '[admin] The tenant proxy requires API_BASE_URL (server) or NEXT_PUBLIC_API_URL. ' +

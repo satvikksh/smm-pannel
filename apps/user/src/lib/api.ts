@@ -21,7 +21,7 @@ const DEV_API_BASE = 'http://localhost:4000';
 
 function apiBaseFromEnv(): string {
   const fromEnv = process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL;
-  if (fromEnv) return fromEnv;
+  if (fromEnv) return fromEnv.replace(/\/+$/, '');
   if (process.env.NODE_ENV === 'production') return '';
   return DEV_API_BASE;
 }
