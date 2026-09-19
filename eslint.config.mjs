@@ -11,6 +11,7 @@ export default tseslint.config(
       '**/out/**',
       '**/coverage/**',
       '**/*.env*',
+      'apps/api/api/index.cjs',
     ],
   },
   js.configs.recommended,
