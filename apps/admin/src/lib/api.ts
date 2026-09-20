@@ -2,20 +2,18 @@ import type { AuthSessionState, LicenseState } from '@smm/types';
 import { currentSubdomainSlug } from './subdomain';
 
 /**
- * API origin used by the browser on every request, resolved from
- * `NEXT_PUBLIC_API_URL` (e.g. `https://smm-pannel-api.vercel.app` in production,
- * `http://localhost:4000` in local dev). `NEXT_PUBLIC_API_BASE_URL` is kept as
- * a legacy alias.
+ * API origin used by the browser on every request.
  *
- * Resolution is deliberately lazy:
+ * Production is deliberately same-origin: the panel calls `/api/v1/...` on its
+ * own domain and `next.config.mjs` rewrites those paths to the API host.
+ * Because `vercel.app` is a public suffix, the panel and the API live on
+ * different *sites*; proxying API traffic through the panel origin keeps the
+ * HttpOnly session cookies first-party, so browsers with third-party cookie
+ * blocking (the Chrome/Safari default) still store and send them.
  *
- *   - The value is only read at the moment a request is actually made from a
- *     client effect / event handler — never during static prerendering — so a
- *     production build succeeds even before the environment variable is wired
- *     into the Vercel project.
- *   - A production request made without a configured URL fails loudly with
- *     installation instructions instead of silently dialing localhost.
- *   - Local development (`next dev`) falls back to http://localhost:4000.
+ *   - Local development (`next dev`) uses `NEXT_PUBLIC_API_URL`, falling back
+ *     to http://localhost:4000. `NEXT_PUBLIC_API_BASE_URL` is kept as a legacy
+ *     alias.
  */
 
 export const ROLE = 'admin';
@@ -27,25 +25,20 @@ export const LICENSE_PATH = '/login';
 const DEV_API_BASE = 'http://localhost:4000';
 
 function apiBaseFromEnv(): string {
-  const fromEnv = process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL;
-  if (fromEnv) return fromEnv.replace(/\/+$/, '');
   if (process.env.NODE_ENV === 'production') return '';
-  return DEV_API_BASE;
+  const fromEnv = process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL;
+  return (fromEnv ?? DEV_API_BASE).replace(/\/+$/, '');
 }
 
 /** Exported for server components (e.g. the theme provider's apiBase prop). */
 export const API_BASE = apiBaseFromEnv();
 
-/** Resolve the configured API origin, failing loudly when one is missing. */
+/**
+ * Resolve the API origin. An empty string means the current origin: production
+ * requests go to `/api/v1/...` on the panel and are proxied by the rewrite in
+ * `next.config.mjs`.
+ */
 export function getApiBase(): string {
-  if (!API_BASE) {
-    throw new Error(
-      '[admin] NEXT_PUBLIC_API_URL is not configured.\n' +
-        'Add it to the Admin panel Vercel project (Vercel → Admin project → ' +
-        'Settings → Environment Variables):\n' +
-        'NEXT_PUBLIC_API_URL=https://smm-pannel-api.vercel.app',
-    );
-  }
   return API_BASE;
 }
 
