@@ -142,7 +142,7 @@ export default function CategoriesPage() {
                 <Th>Name</Th>
                 <Th>Slug</Th>
                 <Th>Icon</Th>
-                <Th>Order</Th>
+                <Th>Orders</Th>
                 <Th>Status</Th>
                 <Th>Actions</Th>
               </THead>
