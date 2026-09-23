@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { PANEL_THEMES, PANEL_THEME_LABELS, type PanelTheme } from '@smm/types';
+import { PANEL_THEMES, PANEL_THEME_DESCRIPTIONS, PANEL_THEME_LABELS, type PanelTheme } from '@smm/types';
 import { Badge } from './badge';
 import { Button } from './primitives';
 import { Card, CardHeader } from './card';
@@ -125,7 +125,7 @@ export function UserThemeOverrideSettings({
                     {isActive ? <Badge>Active</Badge> : null}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {isActive ? 'Your personal choice' : themeDescription(theme)}
+                    {isActive ? 'Your personal choice' : PANEL_THEME_DESCRIPTIONS[theme]}
                   </p>
                 </div>
               </div>
@@ -145,15 +145,4 @@ export function UserThemeOverrideSettings({
       </div>
     </Card>
   );
-}
-
-function themeDescription(theme: PanelTheme): string {
-  switch (theme) {
-    case 'modern-light':
-      return 'Clean light interface';
-    case 'modern-dark':
-      return 'Premium navy dark mode';
-    case 'premium-gradient':
-      return 'Vibrant gradient colors';
-  }
 }

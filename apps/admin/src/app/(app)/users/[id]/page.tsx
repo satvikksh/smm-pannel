@@ -80,22 +80,22 @@ export default function UserDetailPage() {
           <CardHeader title="Account" />
           <dl className="space-y-3 text-sm">
             <div className="flex items-center justify-between">
-              <dt className="text-zinc-500 dark:text-zinc-400">Status</dt>
+              <dt className="text-muted-foreground">Status</dt>
               <dd>
                 <StatusBadge status={user.status} />
               </dd>
             </div>
             <div className="flex items-center justify-between">
-              <dt className="text-zinc-500 dark:text-zinc-400">Role</dt>
-              <dd className="font-medium capitalize text-zinc-800 dark:text-zinc-100">{user.role}</dd>
+              <dt className="text-muted-foreground">Role</dt>
+              <dd className="font-medium capitalize text-foreground">{user.role}</dd>
             </div>
             <div className="flex items-center justify-between">
-              <dt className="text-zinc-500 dark:text-zinc-400">Phone</dt>
-              <dd className="font-medium text-zinc-800 dark:text-zinc-100">{user.phone}</dd>
+              <dt className="text-muted-foreground">Phone</dt>
+              <dd className="font-medium text-foreground">{user.phone}</dd>
             </div>
             <div className="flex items-center justify-between">
-              <dt className="text-zinc-500 dark:text-zinc-400">Joined</dt>
-              <dd className="font-medium text-zinc-800 dark:text-zinc-100">{formatDate(user.createdAt)}</dd>
+              <dt className="text-muted-foreground">Joined</dt>
+              <dd className="font-medium text-foreground">{formatDate(user.createdAt)}</dd>
             </div>
           </dl>
         </Card>
@@ -105,7 +105,7 @@ export default function UserDetailPage() {
             <CardHeader title="Recent transactions" subtitle="Latest 20 wallet movements" />
           </div>
           {transactions.length === 0 ? (
-            <p className="px-5 pb-5 text-sm text-zinc-500">No transactions yet.</p>
+            <p className="px-5 pb-5 text-sm text-muted-foreground">No transactions yet.</p>
           ) : (
             <Table>
               <THead>
@@ -121,13 +121,13 @@ export default function UserDetailPage() {
                     <Td>{txn.description}</Td>
                     <Td
                       className={`tabular-nums font-semibold ${
-                        txn.type === 'debit' ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'
+                        txn.type === 'debit' ? 'text-danger' : 'text-emerald-600 dark:text-emerald-400'
                       }`}
                     >
                       {txn.type === 'debit' ? '-' : '+'}
                       {formatMoney(txn.amount)}
                     </Td>
-                    <Td className="whitespace-nowrap text-zinc-500">{formatDate(txn.createdAt)}</Td>
+                    <Td className="whitespace-nowrap text-muted-foreground">{formatDate(txn.createdAt)}</Td>
                   </Tr>
                 ))}
               </TBody>

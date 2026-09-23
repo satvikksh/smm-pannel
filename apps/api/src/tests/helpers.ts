@@ -53,9 +53,13 @@ export async function loginAdmin(
   t: TestAgent,
   email: string,
   password: string,
-  licenseKey = '',
+  _licenseKey = '',
 ): Promise<request.Response> {
-  return t.agent.post('/api/v1/auth/admin/login').send({ email, password, licenseKey });
+  // Admin login no longer accepts a license key: the license assigned to the
+  // account is detected server-side. The parameter is kept (and ignored) so
+  // legacy call sites stay valid, and zod strips any stray field anyway.
+  void _licenseKey;
+  return t.agent.post('/api/v1/auth/admin/login').send({ email, password });
 }
 
 export async function loginSuperAdmin(t: TestAgent): Promise<request.Response> {

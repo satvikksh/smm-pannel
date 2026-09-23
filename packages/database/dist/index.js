@@ -42,7 +42,7 @@ var userSchema = new Schema(
     status: {
       type: String,
       required: true,
-      enum: ["active", "suspended", "inactive", "deleted"],
+      enum: ["active", "suspended", "inactive", "deleted", "pending", "rejected"],
       default: "active",
       index: true
     },
@@ -51,6 +51,9 @@ var userSchema = new Schema(
     subdomain: { type: String, default: null },
     subdomainStatus: { type: String, enum: ["active", "disabled"], default: null },
     subdomainCreatedAt: { type: Date, default: null },
+    approvedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
+    approvedAt: { type: Date, default: null },
+    rejectionReason: { type: String, default: null, trim: true, maxlength: 500 },
     adminId: { type: Schema.Types.ObjectId, ref: "User", default: null, index: true },
     assignedTo: { type: Schema.Types.ObjectId, ref: "User", default: null, index: true },
     parentAdminId: { type: Schema.Types.ObjectId, ref: "User", default: null, index: true },
@@ -151,13 +154,47 @@ serviceSchema.index({ categoryId: 1, status: 1 });
 var Service = models4.Service ?? model4("Service", serviceSchema);
 var service_default = Service;
 
-// src/models/order.ts
+// src/models/engagementBundle.ts
 import mongoose6 from "mongoose";
 var { Schema: Schema5, model: model5, models: models5 } = mongoose6;
-var orderSchema = new Schema5(
+var engagementBundleSchema = new Schema5(
   {
-    userId: { type: Schema5.Types.ObjectId, ref: "User", required: true, index: true },
-    serviceId: { type: Schema5.Types.ObjectId, ref: "Service", required: true, index: true },
+    type: { type: String, enum: ["likes", "views", "subscribers"], required: true, index: true },
+    quantity: { type: Number, required: true, min: 1 },
+    price: { type: Number, required: true, min: 0 },
+    currency: { type: String, required: true, trim: true, uppercase: true, default: "INR" },
+    displayName: { type: String, required: true, trim: true, maxlength: 150 },
+    description: { type: String, default: "", trim: true, maxlength: 600 },
+    status: { type: String, enum: ["active", "inactive"], default: "active", index: true },
+    sortOrder: { type: Number, default: 0, min: 0, max: 9999 },
+    deletedAt: { type: Date, default: null, index: true }
+  },
+  { timestamps: true, versionKey: false }
+);
+engagementBundleSchema.pre("validate", function(next) {
+  if (Number.isFinite(this.price)) {
+    this.price = Math.round(this.price * 100) / 100;
+  }
+  if (Number.isFinite(this.quantity)) {
+    this.quantity = Math.round(this.quantity);
+  }
+  next();
+});
+engagementBundleSchema.index(
+  { type: 1, quantity: 1 },
+  { unique: true, partialFilterExpression: { deletedAt: null } }
+);
+engagementBundleSchema.index({ type: 1, sortOrder: 1, quantity: 1 });
+var EngagementBundle = models5.EngagementBundle ?? model5("EngagementBundle", engagementBundleSchema);
+var engagementBundle_default = EngagementBundle;
+
+// src/models/order.ts
+import mongoose7 from "mongoose";
+var { Schema: Schema6, model: model6, models: models6 } = mongoose7;
+var orderSchema = new Schema6(
+  {
+    userId: { type: Schema6.Types.ObjectId, ref: "User", required: true, index: true },
+    serviceId: { type: Schema6.Types.ObjectId, ref: "Service", required: true, index: true },
     serviceName: { type: String, required: true, trim: true },
     categoryName: { type: String, default: "", trim: true },
     link: { type: String, required: true, trim: true, maxlength: 2e3 },
@@ -170,21 +207,24 @@ var orderSchema = new Schema5(
       index: true
     },
     startCounter: { type: Number, default: 0, min: 0 },
-    remaining: { type: Number, default: 0, min: 0 }
+    remaining: { type: Number, default: 0, min: 0 },
+    bundleId: { type: Schema6.Types.ObjectId, ref: "EngagementBundle", default: null, index: true },
+    bundleType: { type: String, enum: ["likes", "views", "subscribers"], default: null },
+    currency: { type: String, default: null, trim: true }
   },
   { timestamps: true, versionKey: false }
 );
 orderSchema.index({ userId: 1, status: 1, createdAt: -1 });
 orderSchema.index({ createdAt: -1 });
-var Order = models5.Order ?? model5("Order", orderSchema);
+var Order = models6.Order ?? model6("Order", orderSchema);
 var order_default = Order;
 
 // src/models/transaction.ts
-import mongoose7 from "mongoose";
-var { Schema: Schema6, model: model6, models: models6 } = mongoose7;
-var transactionSchema = new Schema6(
+import mongoose8 from "mongoose";
+var { Schema: Schema7, model: model7, models: models7 } = mongoose8;
+var transactionSchema = new Schema7(
   {
-    userId: { type: Schema6.Types.ObjectId, ref: "User", required: true, index: true },
+    userId: { type: Schema7.Types.ObjectId, ref: "User", required: true, index: true },
     type: { type: String, enum: ["credit", "debit", "refund"], required: true },
     status: {
       type: String,
@@ -200,15 +240,15 @@ var transactionSchema = new Schema6(
   { timestamps: true, versionKey: false }
 );
 transactionSchema.index({ userId: 1, createdAt: -1 });
-var Transaction = models6.Transaction ?? model6("Transaction", transactionSchema);
+var Transaction = models7.Transaction ?? model7("Transaction", transactionSchema);
 var transaction_default = Transaction;
 
 // src/models/wallet.ts
-import mongoose8 from "mongoose";
-var { Schema: Schema7, model: model7, models: models7 } = mongoose8;
-var walletSchema = new Schema7(
+import mongoose9 from "mongoose";
+var { Schema: Schema8, model: model8, models: models8 } = mongoose9;
+var walletSchema = new Schema8(
   {
-    userId: { type: Schema7.Types.ObjectId, ref: "User", required: true, unique: true, index: true },
+    userId: { type: Schema8.Types.ObjectId, ref: "User", required: true, unique: true, index: true },
     balance: { type: Number, required: true, default: 0, min: 0 },
     totalDeposited: { type: Number, default: 0, min: 0 },
     totalSpent: { type: Number, default: 0, min: 0 },
@@ -216,13 +256,13 @@ var walletSchema = new Schema7(
   },
   { versionKey: false, timestamps: true }
 );
-var Wallet = models7.Wallet ?? model7("Wallet", walletSchema);
+var Wallet = models8.Wallet ?? model8("Wallet", walletSchema);
 var wallet_default = Wallet;
 
 // src/models/paymentMethod.ts
-import mongoose9 from "mongoose";
-var { Schema: Schema8, model: model8, models: models8 } = mongoose9;
-var paymentMethodSchema = new Schema8(
+import mongoose10 from "mongoose";
+var { Schema: Schema9, model: model9, models: models9 } = mongoose10;
+var paymentMethodSchema = new Schema9(
   {
     name: { type: String, required: true, trim: true, maxlength: 80 },
     code: {
@@ -236,33 +276,33 @@ var paymentMethodSchema = new Schema8(
     },
     enabled: { type: Boolean, default: true },
     instructions: { type: String, default: "", maxlength: 2e3 },
-    config: { type: mongoose9.Schema.Types.Mixed, default: {} }
+    config: { type: mongoose10.Schema.Types.Mixed, default: {} }
   },
   { timestamps: true, versionKey: false }
 );
-var PaymentMethod = models8.PaymentMethod ?? model8("PaymentMethod", paymentMethodSchema);
+var PaymentMethod = models9.PaymentMethod ?? model9("PaymentMethod", paymentMethodSchema);
 var paymentMethod_default = PaymentMethod;
 
 // src/models/platformSetting.ts
-import mongoose10 from "mongoose";
-var { Schema: Schema9, model: model9, models: models9 } = mongoose10;
-var platformSettingSchema = new Schema9(
+import mongoose11 from "mongoose";
+var { Schema: Schema10, model: model10, models: models10 } = mongoose11;
+var platformSettingSchema = new Schema10(
   {
     key: { type: String, required: true, unique: true, index: true, trim: true, maxlength: 100 },
-    value: { type: mongoose10.Schema.Types.Mixed, required: true },
-    updatedBy: { type: Schema9.Types.ObjectId, ref: "User", default: null }
+    value: { type: mongoose11.Schema.Types.Mixed, required: true },
+    updatedBy: { type: Schema10.Types.ObjectId, ref: "User", default: null }
   },
   { timestamps: true, versionKey: false }
 );
-var PlatformSetting = models9.PlatformSetting ?? model9("PlatformSetting", platformSettingSchema);
+var PlatformSetting = models10.PlatformSetting ?? model10("PlatformSetting", platformSettingSchema);
 var platformSetting_default = PlatformSetting;
 
 // src/models/auditLog.ts
-import mongoose11 from "mongoose";
-var { Schema: Schema10, model: model10, models: models10 } = mongoose11;
-var auditLogSchema = new Schema10(
+import mongoose12 from "mongoose";
+var { Schema: Schema11, model: model11, models: models11 } = mongoose12;
+var auditLogSchema = new Schema11(
   {
-    actorId: { type: Schema10.Types.ObjectId, ref: "User", default: null, index: true },
+    actorId: { type: Schema11.Types.ObjectId, ref: "User", default: null, index: true },
     actorName: { type: String, default: "" },
     actorRole: { type: String, enum: ["super_admin", "admin", "user", "system"], default: "system", index: true },
     action: { type: String, required: true, index: true },
@@ -271,22 +311,22 @@ var auditLogSchema = new Schema10(
     targetLabel: { type: String, default: "" },
     result: { type: String, enum: ["success", "failure"], default: "success" },
     ip: { type: String, default: "" },
-    metadata: { type: mongoose11.Schema.Types.Mixed, default: {} },
+    metadata: { type: mongoose12.Schema.Types.Mixed, default: {} },
     createdAt: { type: Date, default: Date.now }
   },
   { timestamps: false, versionKey: false }
 );
 auditLogSchema.index({ createdAt: -1 });
-var AuditLog = models10.AuditLog ?? model10("AuditLog", auditLogSchema);
+var AuditLog = models11.AuditLog ?? model11("AuditLog", auditLogSchema);
 var auditLog_default = AuditLog;
 
 // src/models/session.ts
-import mongoose12 from "mongoose";
-var { Schema: Schema11, model: model11, models: models11 } = mongoose12;
-var sessionSchema = new Schema11(
+import mongoose13 from "mongoose";
+var { Schema: Schema12, model: model12, models: models12 } = mongoose13;
+var sessionSchema = new Schema12(
   {
     tokenHash: { type: String, required: true, unique: true, index: true },
-    userId: { type: Schema11.Types.ObjectId, ref: "User", required: true, index: true },
+    userId: { type: Schema12.Types.ObjectId, ref: "User", required: true, index: true },
     role: { type: String, enum: ["super_admin", "admin", "user"], required: true, index: true },
     expiresAt: { type: Date, required: true, index: true },
     revokedAt: { type: Date, default: null }
@@ -294,18 +334,18 @@ var sessionSchema = new Schema11(
   { timestamps: true, versionKey: false }
 );
 sessionSchema.index({ userId: 1, revokedAt: 1 });
-var Session = models11.Session ?? model11("Session", sessionSchema);
+var Session = models12.Session ?? model12("Session", sessionSchema);
 var session_default = Session;
 
 // src/models/userThemeSettings.ts
-import mongoose13 from "mongoose";
+import mongoose14 from "mongoose";
 import {
   DEFAULT_PANEL_THEME,
   PANEL_THEMES,
   isPanelTheme
 } from "@smm/types";
-var { Schema: Schema12, model: model12, models: models12 } = mongoose13;
-var userThemeSettingsSchema = new Schema12(
+var { Schema: Schema13, model: model13, models: models13 } = mongoose14;
+var userThemeSettingsSchema = new Schema13(
   {
     _id: { type: String, required: true },
     theme: {
@@ -315,11 +355,11 @@ var userThemeSettingsSchema = new Schema12(
       default: DEFAULT_PANEL_THEME
     },
     allowUserOverride: { type: Boolean, required: true, default: false },
-    updatedBy: { type: Schema12.Types.ObjectId, ref: "User", default: null }
+    updatedBy: { type: Schema13.Types.ObjectId, ref: "User", default: null }
   },
   { timestamps: true, versionKey: false, _id: false }
 );
-var UserThemeSettings = models12.UserThemeSettings ?? model12("UserThemeSettings", userThemeSettingsSchema);
+var UserThemeSettings = models13.UserThemeSettings ?? model13("UserThemeSettings", userThemeSettingsSchema);
 async function getUserThemeSettings(adminId) {
   const doc = await UserThemeSettings.findById(String(adminId)).lean();
   if (!doc) {
@@ -342,14 +382,14 @@ async function setUserThemeSettings(adminId, value, updatedBy) {
 var userThemeSettings_default = UserThemeSettings;
 
 // src/models/userThemePreference.ts
-import mongoose14 from "mongoose";
+import mongoose15 from "mongoose";
 import {
   DEFAULT_PANEL_THEME as DEFAULT_PANEL_THEME2,
   PANEL_THEMES as PANEL_THEMES2,
   isPanelTheme as isPanelTheme2
 } from "@smm/types";
-var { Schema: Schema13, model: model13, models: models13 } = mongoose14;
-var userThemePreferenceSchema = new Schema13(
+var { Schema: Schema14, model: model14, models: models14 } = mongoose15;
+var userThemePreferenceSchema = new Schema14(
   {
     _id: { type: String, required: true },
     theme: {
@@ -358,11 +398,11 @@ var userThemePreferenceSchema = new Schema13(
       required: true,
       default: DEFAULT_PANEL_THEME2
     },
-    updatedBy: { type: Schema13.Types.ObjectId, ref: "User", default: null }
+    updatedBy: { type: Schema14.Types.ObjectId, ref: "User", default: null }
   },
   { timestamps: true, versionKey: false, _id: false }
 );
-var UserThemePreference = models13.UserThemePreference ?? model13("UserThemePreference", userThemePreferenceSchema);
+var UserThemePreference = models14.UserThemePreference ?? model14("UserThemePreference", userThemePreferenceSchema);
 async function getUserThemePreference(userId) {
   const doc = await UserThemePreference.findById(String(userId)).lean();
   if (!doc) return null;
@@ -385,14 +425,14 @@ async function clearUserThemePreference(userId) {
 var userThemePreference_default = UserThemePreference;
 
 // src/models/adminThemeSettings.ts
-import mongoose15 from "mongoose";
+import mongoose16 from "mongoose";
 import {
   DEFAULT_PANEL_THEME as DEFAULT_PANEL_THEME3,
   PANEL_THEMES as PANEL_THEMES3,
   isPanelTheme as isPanelTheme3
 } from "@smm/types";
-var { Schema: Schema14, model: model14, models: models14 } = mongoose15;
-var adminThemeSettingsSchema = new Schema14(
+var { Schema: Schema15, model: model15, models: models15 } = mongoose16;
+var adminThemeSettingsSchema = new Schema15(
   {
     _id: { type: String, required: true },
     theme: {
@@ -413,11 +453,11 @@ var adminThemeSettingsSchema = new Schema14(
       required: true,
       default: DEFAULT_PANEL_THEME3
     },
-    updatedBy: { type: Schema14.Types.ObjectId, ref: "User", default: null }
+    updatedBy: { type: Schema15.Types.ObjectId, ref: "User", default: null }
   },
   { timestamps: true, versionKey: false, _id: false }
 );
-var AdminThemeSettings = models14.AdminThemeSettings ?? model14("AdminThemeSettings", adminThemeSettingsSchema);
+var AdminThemeSettings = models15.AdminThemeSettings ?? model15("AdminThemeSettings", adminThemeSettingsSchema);
 async function getAdminThemeSettings(adminId) {
   const doc = await AdminThemeSettings.findById(String(adminId)).lean();
   if (!doc) {
@@ -491,10 +531,60 @@ async function resolveUserPanelTheme(user) {
 function tenantAllowedThemes(adminConfig) {
   return [.../* @__PURE__ */ new Set([...adminConfig.enabledThemes, adminConfig.defaultTheme])];
 }
+
+// src/platformTheme.ts
+import {
+  DEFAULT_PANEL_THEME as DEFAULT_PANEL_THEME5,
+  ROLES,
+  isPanelTheme as isPanelTheme4
+} from "@smm/types";
+var PLATFORM_THEME_KEY = "platformTheme";
+function normalizePlatformTheme(value) {
+  return isPanelTheme4(value) ? value : DEFAULT_PANEL_THEME5;
+}
+async function getPlatformTheme() {
+  const doc = await platformSetting_default.findOne({ key: PLATFORM_THEME_KEY }).lean();
+  return normalizePlatformTheme(doc?.value);
+}
+async function getPlatformThemeMeta() {
+  const doc = await platformSetting_default.findOne({ key: PLATFORM_THEME_KEY }).lean();
+  return {
+    theme: normalizePlatformTheme(doc?.value),
+    updatedAt: doc?.updatedAt ? new Date(doc.updatedAt).toISOString() : null,
+    updatedBy: doc?.updatedBy ? String(doc.updatedBy) : null
+  };
+}
+async function setPlatformTheme(theme, updatedBy) {
+  await platformSetting_default.updateOne(
+    { key: PLATFORM_THEME_KEY },
+    { $set: { value: theme, updatedBy } },
+    { upsert: true }
+  );
+  const admins = await user_default.find({ role: ROLES.ADMIN, parentAdminId: { $in: [null, void 0] } }).select("_id").lean();
+  await Promise.all(
+    admins.map(async (admin) => {
+      const adminId = String(admin._id);
+      await Promise.all([
+        adminThemeSettings_default.findByIdAndUpdate(
+          adminId,
+          { $set: { theme, updatedBy } },
+          { upsert: true, new: true }
+        ),
+        userThemeSettings_default.findByIdAndUpdate(
+          adminId,
+          { $set: { theme, updatedBy } },
+          { upsert: true, new: true }
+        )
+      ]);
+    })
+  );
+  return theme;
+}
 export {
   adminThemeSettings_default as AdminThemeSettings,
   auditLog_default as AuditLog,
   category_default as Category,
+  engagementBundle_default as EngagementBundle,
   license_default as License,
   order_default as Order,
   paymentMethod_default as PaymentMethod,
@@ -510,12 +600,15 @@ export {
   connectDatabase,
   disconnectDatabase,
   getAdminThemeSettings,
+  getPlatformTheme,
+  getPlatformThemeMeta,
   getUserThemePreference,
   getUserThemeSettings,
   isConnected,
   mongoose,
   resolveUserPanelTheme,
   setAdminThemeSettings,
+  setPlatformTheme,
   setUserThemePreference,
   setUserThemeSettings,
   tenantAllowedThemes

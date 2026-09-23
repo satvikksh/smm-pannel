@@ -2,6 +2,7 @@ import { PlatformSetting, User, type LicenseRecord } from '@smm/database';
 import { toLicense, toSafeUser } from '@smm/auth';
 import type {
   AuditLog,
+  EngagementBundleType,
   License,
   Order as OrderEntity,
   PaymentMethod as PaymentMethodEntity,
@@ -95,6 +96,9 @@ export type OrderLike = {
   status: OrderEntity['status'];
   startCounter: number;
   remaining: number;
+  bundleId?: { toString(): string } | null;
+  bundleType?: EngagementBundleType | null;
+  currency?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -112,6 +116,9 @@ export function serializeOrder(o: OrderLike): OrderEntity {
     status: o.status,
     startCounter: o.startCounter,
     remaining: o.remaining,
+    bundleId: o.bundleId ? String(o.bundleId) : null,
+    bundleType: o.bundleType ?? null,
+    currency: o.currency || null,
     createdAt: o.createdAt.toISOString(),
     updatedAt: o.updatedAt.toISOString(),
   };

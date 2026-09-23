@@ -5,6 +5,7 @@ import { getEnvironment } from '@smm/config';
 import { errorHandler, notFound } from './middleware/error-handler';
 import { apiRouter } from './routes';
 import { googleAuthRouter } from './routes/auth/google';
+import { adminGoogleAuthRouter } from './routes/auth/google-admin';
 
 /** Vercel-hosted panel origins that the API must always accept (production). */
 const PRODUCTION_PANEL_ORIGINS = [
@@ -91,6 +92,7 @@ export function createApp(): express.Express {
   });
 
   app.use('/api/auth', googleAuthRouter());
+  app.use('/api/auth', adminGoogleAuthRouter());
   app.use('/api/v1', apiRouter());
 
   app.use(notFound);

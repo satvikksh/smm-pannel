@@ -29,6 +29,13 @@ export interface Environment {
     /** Absolute Google OAuth redirect (callback) URI. */
     googleRedirectUri: string;
     /**
+     * Absolute Google OAuth redirect (callback) URI for the Admin panel. The
+     * callback runs through the Admin panel origin (so the OAuth state cookies
+     * stay first-party and the session that is issued lands on the same site).
+     * Defaults to `{adminAppUrl}/api/auth/admin/google/callback`.
+     */
+    googleAdminRedirectUri: string;
+    /**
      * Extra comma-separated CORS origins accepted by the API in addition to the
      * three panel app URLs and localhost development origins. Empty by default.
      */

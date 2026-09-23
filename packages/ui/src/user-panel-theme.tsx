@@ -9,19 +9,21 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import {
+  DEFAULT_PANEL_THEME,
+  PANEL_THEME_DARK,
+  PANEL_THEMES,
+  isPanelTheme,
+  type PanelTheme,
+} from '@smm/types';
 
-export type PanelTheme = 'modern-light' | 'modern-dark' | 'premium-gradient';
+export type { PanelTheme } from '@smm/types';
 
-const VALID_THEMES: readonly PanelTheme[] = ['modern-light', 'modern-dark', 'premium-gradient'];
-
-export const DEFAULT_PANEL_THEME: PanelTheme = 'modern-light';
-
-export function isPanelTheme(value: unknown): value is PanelTheme {
-  return typeof value === 'string' && (VALID_THEMES as readonly string[]).includes(value);
-}
+const VALID_THEMES: readonly PanelTheme[] = PANEL_THEMES;
+export { DEFAULT_PANEL_THEME, isPanelTheme };
 
 export function isThemeDark(theme: PanelTheme): boolean {
-  return theme === 'modern-dark';
+  return (PANEL_THEME_DARK as readonly string[]).includes(theme);
 }
 
 export function applyThemeToElement(theme: PanelTheme, attribute: string): void {
@@ -51,15 +53,34 @@ export interface PanelThemeContextValue {
 const USER_ATTRIBUTE = 'data-user-theme';
 const USER_STORAGE_KEY = 'smm-user-panel-theme';
 
+/** Public platform theme (no auth) — used on login/register pages. */
+export async function fetchPlatformTheme(apiBase: string, requestInit?: RequestInit): Promise<PanelTheme> {
+  try {
+    const res = await fetch(`${apiBase}/api/v1/public/theme`, {
+      cache: 'no-store',
+      credentials: 'omit',
+      ...requestInit,
+    });
+    if (!res.ok) return DEFAULT_PANEL_THEME;
+    const body = (await res.json()) as { data?: { theme?: unknown } };
+    return isPanelTheme(body?.data?.theme) ? body.data.theme : DEFAULT_PANEL_THEME;
+  } catch {
+    return DEFAULT_PANEL_THEME;
+  }
+}
+
 export async function fetchUserPanelTheme(apiBase: string): Promise<PanelTheme> {
   try {
     const res = await fetch(`${apiBase}/api/v1/user/theme`, { cache: 'no-store', credentials: 'omit' });
-    if (!res.ok) return DEFAULT_PANEL_THEME;
-    const body = (await res.json()) as { data?: { theme?: unknown } };
-    const theme = body?.data?.theme;
-    return isPanelTheme(theme) ? theme : DEFAULT_PANEL_THEME;
+    if (res.ok) {
+      const body = (await res.json()) as { data?: { theme?: unknown } };
+      if (isPanelTheme(body?.data?.theme)) return body.data.theme;
+    }
+    // Unauthenticated (login/register) or unavailable → fall back to the
+    // platform theme so the auth pages still reflect the configured look.
+    return fetchPlatformTheme(apiBase);
   } catch {
-    return DEFAULT_PANEL_THEME;
+    return fetchPlatformTheme(apiBase);
   }
 }
 
@@ -103,14 +124,14 @@ export function UserPanelThemeProvider({
   }, [reload]);
 
   useEffect(() => {
-    const onVisibility = () => {
+    const reloadProvider = () => {
       if (document.visibilityState === 'visible') void reload();
     };
-    window.addEventListener('focus', onVisibility);
-    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('focus', reloadProvider);
+    document.addEventListener('visibilitychange', reloadProvider);
     return () => {
-      window.removeEventListener('focus', onVisibility);
-      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('focus', reloadProvider);
+      document.removeEventListener('visibilitychange', reloadProvider);
     };
   }, [reload]);
 
@@ -133,9 +154,11 @@ export function useUserPanelTheme(): PanelThemeContextValue {
  * there is no flash of the wrong theme.
  */
 export function UserPanelThemeScript() {
-  const code = `(function(){try{var t=localStorage.getItem('${USER_STORAGE_KEY}');var root=document.documentElement;function valid(v){return v==='modern-light'||v==='modern-dark'||v==='premium-gradient';}if(!valid(t))t=${JSON.stringify(
-      DEFAULT_PANEL_THEME,
-    )};root.setAttribute('${USER_ATTRIBUTE}',t);root.classList.toggle('dark',t==='modern-dark');}catch(e){}})();`;
+  const code = `(function(){try{var t=localStorage.getItem('${USER_STORAGE_KEY}');var root=document.documentElement;var themes=${JSON.stringify(
+    VALID_THEMES,
+  )};var dark=${JSON.stringify(PANEL_THEME_DARK)};if(themes.indexOf(t)===-1)t=${JSON.stringify(
+    DEFAULT_PANEL_THEME,
+  )};root.setAttribute('${USER_ATTRIBUTE}',t);root.classList.toggle('dark',dark.indexOf(t)!==-1);}catch(e){}})();`;
   return <script dangerouslySetInnerHTML={{ __html: code }} />;
 }
 
@@ -146,19 +169,26 @@ export function UserPanelThemeScript() {
 const ADMIN_ATTRIBUTE = 'data-admin-theme';
 const ADMIN_STORAGE_KEY = 'smm-admin-panel-theme';
 
-async function fetchAdminPanelTheme(apiBase: string, requestInit?: RequestInit): Promise<PanelTheme> {
+async function fetchAdminPanelTheme(
+  apiBase: string,
+  requestInit?: RequestInit,
+  endpoint = '/admin/theme',
+): Promise<PanelTheme> {
   try {
-    const res = await fetch(`${apiBase}/api/v1/admin/theme`, {
+    const res = await fetch(`${apiBase}/api/v1${endpoint}`, {
       cache: 'no-store',
       credentials: 'include',
       ...requestInit,
     });
-    if (!res.ok) return DEFAULT_PANEL_THEME;
-    const body = (await res.json()) as { data?: { theme?: unknown } };
-    const theme = body?.data?.theme;
-    return isPanelTheme(theme) ? theme : DEFAULT_PANEL_THEME;
+    if (res.ok) {
+      const body = (await res.json()) as { data?: { theme?: unknown } };
+      if (isPanelTheme(body?.data?.theme)) return body.data.theme;
+    }
+    // Unauthenticated (login/register) or unavailable → fall back to the
+    // platform theme so the auth pages still reflect the configured look.
+    return fetchPlatformTheme(apiBase, requestInit);
   } catch {
-    return DEFAULT_PANEL_THEME;
+    return fetchPlatformTheme(apiBase, requestInit);
   }
 }
 
@@ -173,20 +203,27 @@ const AdminPanelCtx = createContext<PanelThemeContextValue | null>(null);
  * DB-driven provider for the Admin Panel. The theme is the Main Admin's
  * `AdminThemeSettings.theme`, managed by the Super Admin. The toggle is
  * removed; the provider reads the server value on mount and on refocus.
+ *
+ * The Super Admin panel passes `endpoint="/public/theme"` to mirror the global
+ * platform theme (works authenticated or on the login page).
  */
 export function AdminPanelThemeProvider({
   apiBase,
   children,
   requestInit,
+  endpoint = '/admin/theme',
 }: {
   apiBase: string;
   children: ReactNode;
   requestInit?: RequestInit;
+  endpoint?: string;
 }) {
   const apiBaseRef = useRef(apiBase);
   apiBaseRef.current = apiBase;
   const requestInitRef = useRef(requestInit);
   requestInitRef.current = requestInit;
+  const endpointRef = useRef(endpoint);
+  endpointRef.current = endpoint;
   const [theme, setThemeState] = useState<PanelTheme>(DEFAULT_PANEL_THEME);
 
   const apply = useCallback((next: PanelTheme) => {
@@ -196,7 +233,7 @@ export function AdminPanelThemeProvider({
   }, []);
 
   const reload = useCallback(async (): Promise<PanelTheme> => {
-    const next = await fetchAdminPanelTheme(apiBaseRef.current, requestInitRef.current);
+    const next = await fetchAdminPanelTheme(apiBaseRef.current, requestInitRef.current, endpointRef.current);
     apply(next);
     return next;
   }, [apply]);
@@ -211,14 +248,14 @@ export function AdminPanelThemeProvider({
   }, [reload]);
 
   useEffect(() => {
-    const onVisibility = () => {
+    const reloadProvider = () => {
       if (document.visibilityState === 'visible') void reload();
     };
-    window.addEventListener('focus', onVisibility);
-    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('focus', reloadProvider);
+    document.addEventListener('visibilitychange', reloadProvider);
     return () => {
-      window.removeEventListener('focus', onVisibility);
-      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('focus', reloadProvider);
+      document.removeEventListener('visibilitychange', reloadProvider);
     };
   }, [reload]);
 
@@ -241,8 +278,10 @@ export function useAdminPanelTheme(): PanelThemeContextValue {
  * script prevents an FOUC of the wrong color scheme.
  */
 export function AdminPanelThemeScript() {
-  const code = `(function(){try{var t=localStorage.getItem('${ADMIN_STORAGE_KEY}');var root=document.documentElement;function valid(v){return v==='modern-light'||v==='modern-dark'||v==='premium-gradient';}if(!valid(t))t=${JSON.stringify(
-      DEFAULT_PANEL_THEME,
-    )};root.setAttribute('${ADMIN_ATTRIBUTE}',t);root.classList.toggle('dark',t==='modern-dark');}catch(e){}})();`;
+  const code = `(function(){try{var t=localStorage.getItem('${ADMIN_STORAGE_KEY}');var root=document.documentElement;var themes=${JSON.stringify(
+    VALID_THEMES,
+  )};var dark=${JSON.stringify(PANEL_THEME_DARK)};if(themes.indexOf(t)===-1)t=${JSON.stringify(
+    DEFAULT_PANEL_THEME,
+  )};root.setAttribute('${ADMIN_ATTRIBUTE}',t);root.classList.toggle('dark',dark.indexOf(t)!==-1);}catch(e){}})();`;
   return <script dangerouslySetInnerHTML={{ __html: code }} />;
 }

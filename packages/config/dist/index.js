@@ -106,6 +106,7 @@ function getEnvironment() {
     googleClientId: getEnv("GOOGLE_CLIENT_ID") ?? "",
     googleClientSecret: getEnv("GOOGLE_CLIENT_SECRET") ?? "",
     googleRedirectUri: getEnv("GOOGLE_REDIRECT_URI") ?? "",
+    googleAdminRedirectUri: getEnv("GOOGLE_ADMIN_REDIRECT_URI") ?? `${getEnv("NEXT_PUBLIC_ADMIN_APP_URL") ?? "http://localhost:3001"}/api/auth/admin/google/callback`,
     apiCorsOrigins: getEnv("API_CORS_ORIGINS") ?? ""
   };
 }

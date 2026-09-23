@@ -68,14 +68,14 @@ export default function WalletOverviewPage() {
           ) : methods.error ? (
             <ErrorState message={methods.error} onRetry={methods.reload} />
           ) : (methods.data ?? []).length === 0 ? (
-            <p className="text-sm text-zinc-500">No payment methods configured.</p>
+            <p className="text-sm text-muted-foreground">No payment methods configured.</p>
           ) : (
-            <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
+            <ul className="divide-y divide-border">
               {(methods.data ?? []).map((method) => (
                 <li key={method.id} className="flex items-center justify-between gap-3 py-3">
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">{method.name}</p>
-                    <p className="truncate text-xs text-zinc-500">{method.instructions || method.code}</p>
+                    <p className="text-sm font-semibold text-foreground">{method.name}</p>
+                    <p className="truncate text-xs text-muted-foreground">{method.instructions || method.code}</p>
                   </div>
                   <Badge>{method.enabled ? 'enabled' : 'disabled'}</Badge>
                 </li>

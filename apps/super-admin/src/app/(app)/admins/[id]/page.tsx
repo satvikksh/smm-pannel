@@ -189,15 +189,15 @@ export default function AdminDetailPage() {
           <CardHeader title="Account details" />
           <dl className="grid gap-4 sm:grid-cols-2">
             <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-400">Email</dt>
-              <dd className="mt-1 text-sm text-zinc-800 dark:text-zinc-100">{admin.email}</dd>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Email</dt>
+              <dd className="mt-1 text-sm text-foreground">{admin.email}</dd>
             </div>
             <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-400">Phone</dt>
-              <dd className="mt-1 text-sm text-zinc-800 dark:text-zinc-100">{admin.phone}</dd>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Phone</dt>
+              <dd className="mt-1 text-sm text-foreground">{admin.phone}</dd>
             </div>
             <div className="sm:col-span-2">
-              <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-400">Panel URL</dt>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Panel URL</dt>
               <dd className="mt-1 flex flex-wrap items-center gap-2">
                 {admin.subdomain ? (
                   <>
@@ -205,7 +205,7 @@ export default function AdminDetailPage() {
                       href={`https://${admin.subdomain}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+                      className="text-sm font-medium text-primary hover:underline"
                     >
                       {admin.subdomain}
                     </a>
@@ -218,18 +218,18 @@ export default function AdminDetailPage() {
               </dd>
             </div>
             <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-400">Role</dt>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Role</dt>
               <dd className="mt-1">
                 <Badge>{admin.role.replace(/_/g, ' ')}</Badge>
               </dd>
             </div>
             <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-400">Joined</dt>
-              <dd className="mt-1 text-sm text-zinc-800 dark:text-zinc-100">{formatDate(admin.createdAt)}</dd>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Joined</dt>
+              <dd className="mt-1 text-sm text-foreground">{formatDate(admin.createdAt)}</dd>
             </div>
           </dl>
 
-          <div className="mt-5 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+          <div className="mt-5 border-t border-border pt-4 border-border">
             <div className="w-full sm:max-w-xs">
               <Field label="Account status" htmlFor="admin-status">
                 <Select
@@ -248,8 +248,8 @@ export default function AdminDetailPage() {
             </div>
           </div>
 
-          <div className="mt-5 border-t border-zinc-100 pt-4 dark:border-zinc-800">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">
+          <div className="mt-5 border-t border-border pt-4 border-border">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Panel URL controls
             </p>
             <div className="flex flex-wrap gap-2">
@@ -322,31 +322,31 @@ export default function AdminDetailPage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-2">
                 <StatusBadge status={license.status} />
-                <span className="font-mono text-xs text-zinc-400">{license.licenseKey}</span>
+                <span className="font-mono text-xs text-muted-foreground">{license.licenseKey}</span>
               </div>
               <dl className="space-y-2 text-sm">
                 <div className="flex justify-between gap-3">
-                  <dt className="text-zinc-500">Issued</dt>
-                  <dd className="text-zinc-800 dark:text-zinc-100">{formatDateShort(license.issuedAt)}</dd>
+                  <dt className="text-muted-foreground">Issued</dt>
+                  <dd className="text-foreground">{formatDateShort(license.issuedAt)}</dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <dt className="text-zinc-500">Expires</dt>
-                  <dd className="text-zinc-800 dark:text-zinc-100">{formatDateShort(license.expiresAt)}</dd>
+                  <dt className="text-muted-foreground">Expires</dt>
+                  <dd className="text-foreground">{formatDateShort(license.expiresAt)}</dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <dt className="text-zinc-500">Max users</dt>
-                  <dd className="text-zinc-800 dark:text-zinc-100">{license.maxUsers || 'Unlimited'}</dd>
+                  <dt className="text-muted-foreground">Max users</dt>
+                  <dd className="text-foreground">{license.maxUsers || 'Unlimited'}</dd>
                 </div>
               </dl>
-              <div className="border-t border-zinc-100 pt-3 dark:border-zinc-800">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">History</p>
+              <div className="border-t border-border pt-3 border-border">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">History</p>
                 <ul className="space-y-2">
                   {license.history.map((entry, index) => (
                     <li key={index} className="flex items-start gap-2 text-xs">
                       <StatusBadge status={entry.status} />
                       <div>
-                        <p className="text-zinc-700 dark:text-zinc-200">{entry.reason || 'Status updated'}</p>
-                        <p className="text-zinc-400">{formatDate(entry.at)}</p>
+                        <p className="text-foreground">{entry.reason || 'Status updated'}</p>
+                        <p className="text-muted-foreground">{formatDate(entry.at)}</p>
                       </div>
                     </li>
                   ))}
@@ -363,16 +363,16 @@ export default function AdminDetailPage() {
         <Card>
           <CardHeader title="Recent activity" />
           {recentActivity.length === 0 ? (
-            <p className="text-sm text-zinc-500">No activity recorded for this admin.</p>
+            <p className="text-sm text-muted-foreground">No activity recorded for this admin.</p>
           ) : (
-            <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
+            <ul className="divide-y divide-border">
               {recentActivity.map((item) => (
                 <li key={item.id} className="flex items-center justify-between gap-3 py-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm text-zinc-800 dark:text-zinc-100">
+                    <p className="truncate text-sm text-foreground">
                       {item.action.replace(/_/g, ' ').toLowerCase()}
                     </p>
-                    <p className="text-xs text-zinc-400">
+                    <p className="text-xs text-muted-foreground">
                       {formatDate(item.createdAt)} · {item.ip || 'unknown IP'}
                     </p>
                   </div>
@@ -405,7 +405,7 @@ export default function AdminDetailPage() {
             />
           </Field>
           {passwordError ? (
-            <p className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-600 dark:bg-red-500/10 dark:text-red-400">
+            <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm font-medium text-danger">
               {passwordError}
             </p>
           ) : null}

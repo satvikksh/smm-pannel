@@ -104,20 +104,20 @@ export default function OrderDetailPage() {
             ].map((row) => (
               <div
                 key={row.label}
-                className="flex items-center justify-between gap-4 border-b border-zinc-100 pb-2 last:border-0 dark:border-zinc-800"
+                className="flex items-center justify-between gap-4 border-b border-border pb-2 last:border-0 border-border"
               >
-                <dt className="text-sm text-zinc-500 dark:text-zinc-400">{row.label}</dt>
-                <dd className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">{row.value}</dd>
+                <dt className="text-sm text-muted-foreground">{row.label}</dt>
+                <dd className="text-sm font-semibold text-foreground">{row.value}</dd>
               </div>
             ))}
           </dl>
           <div className="mt-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">Target link</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Target link</p>
             <a
               href={data.link}
               target="_blank"
               rel="noreferrer"
-              className="mt-1 block break-all text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+              className="mt-1 block break-all text-sm font-medium text-primary hover:underline"
             >
               {data.link}
             </a>
@@ -128,7 +128,7 @@ export default function OrderDetailPage() {
           <CardHeader title="Update status" subtitle={`Current: ${data.status.replace(/_/g, ' ')}`} />
           <div className="mb-4 flex items-center gap-3">
             <StatusBadge status={data.status} />
-            <span className="text-xs text-zinc-500">{progress}% delivered</span>
+            <span className="text-xs text-muted-foreground">{progress}% delivered</span>
           </div>
           <form className="space-y-4" onSubmit={submit}>
             <Field label="Status" htmlFor="order-status">
@@ -159,7 +159,7 @@ export default function OrderDetailPage() {
               />
             </Field>
             {error ? (
-              <p className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-600 dark:bg-red-500/10 dark:text-red-400">
+              <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm font-medium text-danger">
                 {error}
               </p>
             ) : null}

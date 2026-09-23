@@ -193,17 +193,17 @@ export default function AdminsPage() {
                     <Td>
                       <Link
                         href={`/admins/${admin.id}`}
-                        className="font-semibold text-zinc-800 hover:text-indigo-600 dark:text-zinc-100"
+                        className="font-semibold text-foreground hover:text-primary text-foreground"
                       >
                         {admin.name}
                       </Link>
-                      <p className="text-xs text-zinc-500">{admin.email}</p>
+                      <p className="text-xs text-muted-foreground">{admin.email}</p>
                     </Td>
-                    <Td className="text-zinc-500">{admin.phone}</Td>
+                    <Td className="text-muted-foreground">{admin.phone}</Td>
                     <Td>
                       {admin.subdomain ? (
                         <div className="flex items-center gap-2">
-                          <span className="max-w-[180px] truncate text-xs font-medium text-zinc-700 dark:text-zinc-200">
+                          <span className="max-w-[180px] truncate text-xs font-medium text-foreground">
                             {admin.subdomain}
                           </span>
                           <CopyButton value={admin.subdomain} />
@@ -221,7 +221,7 @@ export default function AdminsPage() {
                       {admin.license ? (
                         <div className="flex flex-col gap-1">
                           <StatusBadge status={admin.license.status} />
-                          <span className="font-mono text-[11px] text-zinc-400">{admin.license.licenseKey}</span>
+                          <span className="font-mono text-[11px] text-muted-foreground">{admin.license.licenseKey}</span>
                         </div>
                       ) : (
                         <Badge>none</Badge>
@@ -230,7 +230,7 @@ export default function AdminsPage() {
                     <Td>
                       <StatusBadge status={admin.status} />
                     </Td>
-                    <Td className="whitespace-nowrap text-zinc-500">{formatDateShort(admin.createdAt)}</Td>
+                    <Td className="whitespace-nowrap text-muted-foreground">{formatDateShort(admin.createdAt)}</Td>
                     <Td>
                       <div className="w-36">
                         <Select
@@ -252,20 +252,20 @@ export default function AdminsPage() {
               </TBody>
             </Table>
           </div>
-          <ul className="divide-y divide-zinc-100 lg:hidden dark:divide-zinc-800">
+          <ul className="divide-y divide-border lg:hidden dark:divide-border">
             {items.map((admin) => (
               <li key={admin.id} className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <Link
                       href={`/admins/${admin.id}`}
-                      className="block truncate text-sm font-semibold text-zinc-800 dark:text-zinc-100"
+                      className="block truncate text-sm font-semibold text-foreground"
                     >
                       {admin.name}
                     </Link>
-                    <p className="truncate text-xs text-zinc-500">{admin.email}</p>
+                    <p className="truncate text-xs text-muted-foreground">{admin.email}</p>
                     {admin.subdomain ? (
-                      <p className="mt-1 flex items-center gap-1.5 truncate text-[11px] text-indigo-500">
+                      <p className="mt-1 flex items-center gap-1.5 truncate text-[11px] text-primary">
                         <Icons.Subdomain className="h-3 w-3 shrink-0" />
                         {admin.subdomain}
                       </p>
@@ -365,7 +365,7 @@ export default function AdminsPage() {
             </Field>
           </div>
           {error ? (
-            <p className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-600 dark:bg-red-500/10 dark:text-red-400">
+            <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm font-medium text-danger">
               {error}
             </p>
           ) : null}

@@ -1,4 +1,5 @@
 import type { AccountStatus, AdminScope, AuditAction, AuthProvider, LicenseStatus, OrderStatus, Role, TransactionStatus, TransactionType } from './roles';
+import type { EngagementBundleStatus, EngagementBundleType } from './dto/engagementBundle';
 import type { SubdomainStatus } from './subdomain';
 import type { PanelTheme } from './user-panel-theme';
 export interface SafeUser {
@@ -29,6 +30,12 @@ export interface SafeUser {
     profileImage: string | null;
     /** True when the email was confirmed by the identity provider. */
     emailVerified: boolean;
+    /** Super Admin (reviewer) who decided this admin registration, when decided. */
+    approvedBy: string | null;
+    /** When the Super Admin approved or rejected this registration. */
+    approvedAt: string | null;
+    /** Reason the Super Admin rejected this registration (null unless rejected). */
+    rejectionReason: string | null;
     createdAt: string;
     updatedAt: string;
 }
@@ -85,6 +92,10 @@ export interface Order {
     status: OrderStatus;
     startCounter: number;
     remaining: number;
+    /** Engagement bundle that priced this order (null for catalog services). */
+    bundleId?: string | null;
+    bundleType?: EngagementBundleType | null;
+    currency?: string | null;
     createdAt: string;
     updatedAt: string;
 }
@@ -205,6 +216,42 @@ export interface AuthSessionState {
     licenseValid: boolean;
     licenseReason: string | null;
 }
+/**
+ * Admin-managed package for an engagement type (Likes/Views/Subscribers).
+ * `deletedAt` marks a soft-deleted (archived) bundle; orders snapshot their
+ * own quantity/price so archiving or editing a bundle never mutates history.
+ */
+export interface EngagementBundle {
+    id: string;
+    type: EngagementBundleType;
+    quantity: number;
+    price: number;
+    currency: string;
+    displayName: string;
+    description: string;
+    status: EngagementBundleStatus;
+    sortOrder: number;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+}
+/** Fields exposed to customers. No pricing-manager internals leak out. */
+export interface EngagementBundlePublic {
+    id: string;
+    type: EngagementBundleType;
+    quantity: number;
+    price: number;
+    currency: string;
+    displayName: string;
+    description: string;
+    sortOrder: number;
+}
+/** Grouped by engagement type for the customer-facing catalog. */
+export interface EngagementBundleCatalog {
+    likes: EngagementBundlePublic[];
+    views: EngagementBundlePublic[];
+    subscribers: EngagementBundlePublic[];
+}
 export interface Paginated<T> {
     items: T[];
     page: number;
@@ -217,6 +264,7 @@ export interface AnalyticsOverview {
     totalAdmins: number;
     activeAdmins: number;
     suspendedAdmins: number;
+    pendingAdminRequests: number;
     activeLicenses: number;
     expiredLicenses: number;
     revenue: number;

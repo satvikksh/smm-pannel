@@ -201,8 +201,8 @@ export default function SubAdminsPage() {
                 {items.map((sub) => (
                   <Tr key={sub.id}>
                     <Td>
-                      <p className="font-semibold text-zinc-800 dark:text-zinc-100">{sub.name}</p>
-                      <p className="text-xs text-zinc-500">{sub.email}</p>
+                      <p className="font-semibold text-foreground">{sub.name}</p>
+                      <p className="text-xs text-muted-foreground">{sub.email}</p>
                     </Td>
                     <Td>
                       <div className="flex flex-wrap gap-1">
@@ -212,7 +212,7 @@ export default function SubAdminsPage() {
                         {!sub.adminScopes || sub.adminScopes.length === 0 ? <Badge>no scopes</Badge> : null}
                       </div>
                     </Td>
-                    <Td className="whitespace-nowrap text-zinc-500">{formatDateShort(sub.createdAt)}</Td>
+                    <Td className="whitespace-nowrap text-muted-foreground">{formatDateShort(sub.createdAt)}</Td>
                     <Td>
                       <div className="flex items-center gap-2">
                         <Button
@@ -242,13 +242,13 @@ export default function SubAdminsPage() {
               </TBody>
             </Table>
           </div>
-          <ul className="divide-y divide-zinc-100 md:hidden dark:divide-zinc-800">
+          <ul className="divide-y divide-border md:hidden dark:divide-border">
             {items.map((sub) => (
               <li key={sub.id} className="space-y-1 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-zinc-800 dark:text-zinc-100">{sub.name}</p>
-                    <p className="truncate text-xs text-zinc-500">{sub.email}</p>
+                    <p className="truncate text-sm font-semibold text-foreground">{sub.name}</p>
+                    <p className="truncate text-xs text-muted-foreground">{sub.email}</p>
                   </div>
                   <div className="flex shrink-0 gap-2">
                     <Button
@@ -267,7 +267,7 @@ export default function SubAdminsPage() {
                     </Button>
                   </div>
                 </div>
-                <p className="text-xs text-zinc-500">{scopesLabel(sub.adminScopes)}</p>
+                <p className="text-xs text-muted-foreground">{scopesLabel(sub.adminScopes)}</p>
               </li>
             ))}
           </ul>

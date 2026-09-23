@@ -1,6 +1,10 @@
 import { Router } from 'express';
-import { Category, Service } from '@smm/database';
-import type { Service as ServiceEntity } from '@smm/types';
+import { Category, EngagementBundle, Service } from '@smm/database';
+import type {
+  EngagementBundleCatalog,
+  EngagementBundlePublic,
+  Service as ServiceEntity,
+} from '@smm/types';
 
 export function userCatalogRouter(): Router {
   const router = Router();
@@ -30,6 +34,32 @@ export function userCatalogRouter(): Router {
       updatedAt: s.updatedAt.toISOString(),
     }));
     res.json({ data: items });
+  });
+
+  /**
+   * Engagement pricing catalog. Only ACTIVE, non-archived bundles are exposed,
+   * grouped by type. Price/quantity come straight from the database — the
+   * customer never supplies them.
+   */
+  router.get('/bundles', async (_req, res) => {
+    const bundles = await EngagementBundle.find({ status: 'active', deletedAt: null })
+      .sort({ sortOrder: 1, quantity: 1 })
+      .lean();
+    const catalog: EngagementBundleCatalog = { likes: [], views: [], subscribers: [] };
+    for (const bundle of bundles) {
+      const item: EngagementBundlePublic = {
+        id: String(bundle._id),
+        type: bundle.type,
+        quantity: bundle.quantity,
+        price: bundle.price,
+        currency: bundle.currency,
+        displayName: bundle.displayName,
+        description: bundle.description,
+        sortOrder: bundle.sortOrder,
+      };
+      catalog[bundle.type].push(item);
+    }
+    res.json({ data: catalog });
   });
 
   return router;

@@ -29,6 +29,12 @@ export interface UserRecord {
     profileImage?: string | null;
     /** True when the identity provider confirmed the account email. */
     emailVerified?: boolean;
+    /** Super Admin (reviewer) who decided this admin registration, when decided. */
+    approvedBy?: mongoose.Types.ObjectId | null;
+    /** When the Super Admin approved or rejected this admin registration. */
+    approvedAt?: Date | null;
+    /** Reason a Super Admin rejected this admin registration. */
+    rejectionReason?: string | null;
     createdAt: Date;
     updatedAt: Date;
 }

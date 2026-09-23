@@ -179,21 +179,21 @@ export default function LicensesPage() {
                     <Td>
                       <Link
                         href={`/licenses/${license.id}`}
-                        className="font-mono text-xs font-semibold text-zinc-800 hover:text-indigo-600 dark:text-zinc-100"
+                        className="font-mono text-xs font-semibold text-foreground hover:text-primary text-foreground"
                       >
                         {license.licenseKey}
                       </Link>
                     </Td>
                     <Td>
-                      <p className="text-sm text-zinc-800 dark:text-zinc-100">
+                      <p className="text-sm text-foreground">
                         {license.adminUserName || '—'}
                       </p>
-                      <p className="text-xs text-zinc-500">{license.adminUserEmail || ''}</p>
+                      <p className="text-xs text-muted-foreground">{license.adminUserEmail || ''}</p>
                     </Td>
                     <Td>
                       {license.adminSubdomain ? (
                         <div className="flex items-center gap-2">
-                          <span className="max-w-[190px] truncate text-xs font-medium text-zinc-700 dark:text-zinc-200">
+                          <span className="max-w-[190px] truncate text-xs font-medium text-foreground">
                             {license.adminSubdomain}
                           </span>
                           <CopyButton value={license.adminSubdomain} />
@@ -205,8 +205,8 @@ export default function LicensesPage() {
                     <Td>
                       <StatusBadge status={license.status} />
                     </Td>
-                    <Td className="whitespace-nowrap text-zinc-500">{formatDateShort(license.expiresAt)}</Td>
-                    <Td className="text-zinc-500">{license.maxUsers || 'Unlimited'}</Td>
+                    <Td className="whitespace-nowrap text-muted-foreground">{formatDateShort(license.expiresAt)}</Td>
+                    <Td className="text-muted-foreground">{license.maxUsers || 'Unlimited'}</Td>
                     <Td>
                       <div className="w-32">
                         <Select
@@ -228,20 +228,20 @@ export default function LicensesPage() {
               </TBody>
             </Table>
           </div>
-          <ul className="divide-y divide-zinc-100 lg:hidden dark:divide-zinc-800">
+          <ul className="divide-y divide-border lg:hidden dark:divide-border">
             {items.map((license) => (
               <li key={license.id} className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <Link
                       href={`/licenses/${license.id}`}
-                      className="block truncate font-mono text-xs font-semibold text-zinc-800 dark:text-zinc-100"
+                      className="block truncate font-mono text-xs font-semibold text-foreground"
                     >
                       {license.licenseKey}
                     </Link>
-                    <p className="truncate text-xs text-zinc-500">{license.adminUserEmail || 'Unassigned'}</p>
+                    <p className="truncate text-xs text-muted-foreground">{license.adminUserEmail || 'Unassigned'}</p>
                     {license.adminSubdomain ? (
-                      <p className="mt-1 flex items-center gap-1.5 truncate text-[11px] text-indigo-500">
+                      <p className="mt-1 flex items-center gap-1.5 truncate text-[11px] text-primary">
                         <Icons.Subdomain className="h-3 w-3 shrink-0" />
                         {license.adminSubdomain}
                       </p>
@@ -305,7 +305,7 @@ export default function LicensesPage() {
             </Field>
           </div>
           {error ? (
-            <p className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-600 dark:bg-red-500/10 dark:text-red-400">
+            <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm font-medium text-danger">
               {error}
             </p>
           ) : null}

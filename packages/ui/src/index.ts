@@ -31,3 +31,4 @@ export type { NavItem, NavSection } from './shell';
 export { ThemePreviewCard } from './theme-preview';
 export { UserThemeAdminSettings } from './user-theme-admin-settings';
 export { UserThemeOverrideSettings } from './user-theme-override-settings';
+export { AdminPanelThemeSettings } from './admin-theme-settings';

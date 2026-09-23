@@ -30,6 +30,8 @@ interface ShellProps {
   onLogout: () => Promise<void> | void;
   /** Optional theme toggle. If omitted the header shows no toggle (web panel). */
   themeToggle?: ReactNode;
+  /** Optional badge counts keyed by nav item `href` (e.g. pending requests). */
+  navBadges?: Record<string, number>;
 }
 
 function isActive(pathname: string, item: NavItem): boolean {
@@ -65,6 +67,18 @@ function Brand({
   );
 }
 
+function NavBadge({ count }: { count: number }) {
+  return (
+    <span className="ml-auto inline-flex min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 py-0.5 text-[11px] font-bold leading-none text-primary-foreground">
+      {count > 99 ? '99+' : count}
+    </span>
+  );
+}
+
+function navCount(badges: Record<string, number> | undefined, href: string): number {
+  return badges && badges[href] ? badges[href] : 0;
+}
+
 export function AppShell({
   appName,
   roleLabel,
@@ -75,6 +89,7 @@ export function AppShell({
   children,
   onLogout,
   themeToggle,
+  navBadges,
 }: ShellProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -121,6 +136,9 @@ export function AppShell({
                 >
                   <Icon className="h-[18px] w-[18px]" />
                   {item.label}
+                  {navCount(navBadges, item.href) > 0 ? (
+                    <NavBadge count={navCount(navBadges, item.href)} />
+                  ) : null}
                 </Link>
               );
             })}
@@ -153,7 +171,7 @@ export function AppShell({
       {menuOpen ? (
         <>
           <button aria-label="Close menu" onClick={() => setMenuOpen(false)} className="fixed inset-0 z-40" />
-          <div className="absolute right-0 z-50 mt-2 w-52 overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-xl">
+          <div className="theme-anim-dropdown absolute right-0 z-50 mt-2 w-52 overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-xl">
             <div className="border-b border-border px-4 py-3">
               <p className="text-sm font-semibold text-foreground">{user.name}</p>
               <p className="text-xs capitalize text-muted-foreground">{user.role.replace(/_/g, ' ')}</p>
@@ -184,14 +202,20 @@ export function AppShell({
   );
 
   return (
-    <div className="min-h-dvh bg-background text-foreground">
+    <div className="relative min-h-dvh bg-background text-foreground">
+      {/* Per-theme decorative backdrop (top glow) */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-x-0 top-0 z-0 h-[380px]"
+        style={{ backgroundImage: 'var(--app-backdrop)' }}
+      />
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-border bg-card lg:flex">
-        <div className="border-b border-border p-4">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex">
+        <div className="border-b border-sidebar-border p-4">
           <Brand appName={appName} roleLabel={roleLabel} subdomain={subdomain} />
         </div>
         <div className="flex flex-1 flex-col overflow-hidden pt-4">{sidebarNav}</div>
-        <div className="border-t border-border p-3">
+        <div className="border-t border-sidebar-border p-3">
           <button
             onClick={handleLogout}
             disabled={loggingOut}
@@ -206,9 +230,9 @@ export function AppShell({
       {/* Mobile drawer */}
       {drawerOpen ? (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <button aria-label="Close menu" onClick={() => setDrawerOpen(false)} className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-          <aside className="absolute inset-y-0 left-0 flex w-[280px] flex-col bg-card text-card-foreground">
-            <div className="flex items-center justify-between border-b border-border p-4">
+          <button aria-label="Close menu" onClick={() => setDrawerOpen(false)} className="theme-anim-fade absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <aside className="theme-anim-drawer absolute inset-y-0 left-0 flex w-[280px] flex-col bg-sidebar text-sidebar-foreground">
+            <div className="flex items-center justify-between border-b border-sidebar-border p-4">
               <Brand appName={appName} roleLabel={roleLabel} subdomain={subdomain} />
               <button
                 onClick={() => setDrawerOpen(false)}
@@ -218,7 +242,7 @@ export function AppShell({
               </button>
             </div>
             <div className="flex flex-1 flex-col overflow-hidden pt-4">{sidebarNav}</div>
-            <div className="border-t border-border p-3">
+            <div className="border-t border-sidebar-border p-3">
               <button
                 onClick={handleLogout}
                 disabled={loggingOut}
@@ -233,9 +257,9 @@ export function AppShell({
       ) : null}
 
       {/* Main column */}
-      <div className="lg:pl-64">
+      <div className="relative z-10 lg:pl-64">
         {/* Mobile sticky header */}
-        <header className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-border bg-card/90 px-4 py-3 backdrop-blur lg:hidden">
+        <header className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-border bg-navbar px-4 py-3 backdrop-blur lg:hidden">
           <button
             aria-label="Open menu"
             onClick={() => setDrawerOpen(true)}
@@ -248,7 +272,7 @@ export function AppShell({
         </header>
 
         {/* Desktop header */}
-        <header className="sticky top-0 z-30 hidden items-center justify-between border-b border-border bg-card/90 px-6 py-3 backdrop-blur lg:flex">
+        <header className="sticky top-0 z-30 hidden items-center justify-between border-b border-border bg-navbar px-6 py-3 backdrop-blur lg:flex">
           <h1 className="text-lg font-bold text-foreground">{appName}</h1>
           <div className="flex items-center gap-2">
             {themeToggle}
@@ -259,7 +283,7 @@ export function AppShell({
         <main className="mx-auto w-full max-w-6xl px-4 pb-24 pt-5 sm:px-6 lg:pb-8 lg:pt-8">{children}</main>
 
         {/* Mobile bottom navigation */}
-        <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 backdrop-blur lg:hidden">
+        <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-navbar backdrop-blur lg:hidden">
           <div className="mx-auto flex max-w-lg items-stretch">
             {bottomNav.map((item) => {
               const active = isActive(pathname, item);
@@ -268,12 +292,13 @@ export function AppShell({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium ${
+                  className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-colors ${
                     active ? 'text-primary' : 'text-muted-foreground'
                   }`}
                 >
                   <Icon className="h-5 w-5" />
                   {item.label}
+                  {navCount(navBadges, item.href) > 0 ? <NavBadge count={navCount(navBadges, item.href)} /> : null}
                 </Link>
               );
             })}

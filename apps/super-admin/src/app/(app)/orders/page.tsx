@@ -164,10 +164,10 @@ export default function OrdersPage() {
                 {items.map((order) => (
                   <Tr key={order.id}>
                     <Td>
-                      <span className="font-semibold text-zinc-700 dark:text-zinc-200">#{shortId(order.id)}</span>
-                      <p className="text-xs text-zinc-400">{formatDateShort(order.createdAt)}</p>
+                      <span className="font-semibold text-foreground">#{shortId(order.id)}</span>
+                      <p className="text-xs text-muted-foreground">{formatDateShort(order.createdAt)}</p>
                     </Td>
-                    <Td className="text-zinc-500">{order.userName || '—'}</Td>
+                    <Td className="text-muted-foreground">{order.userName || '—'}</Td>
                     <Td className="max-w-[180px] truncate">{order.serviceName}</Td>
                     <Td className="tabular-nums">{order.quantity}</Td>
                     <Td className="tabular-nums">{formatMoney(order.price)}</Td>
@@ -204,15 +204,15 @@ export default function OrdersPage() {
               </TBody>
             </Table>
           </div>
-          <ul className="divide-y divide-zinc-100 lg:hidden dark:divide-zinc-800">
+          <ul className="divide-y divide-border lg:hidden dark:divide-border">
             {items.map((order) => (
               <li key={order.id} className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+                    <p className="truncate text-sm font-semibold text-foreground">
                       {order.serviceName}
                     </p>
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-xs text-muted-foreground">
                       #{shortId(order.id)} · {order.userName || 'user'} · {formatMoney(order.price)}
                     </p>
                   </div>

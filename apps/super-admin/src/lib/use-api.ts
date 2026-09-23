@@ -31,7 +31,9 @@ export function useApi<T>(path: string): AsyncState<T> {
         if (active) setData(result);
       })
       .catch((err: unknown) => {
-        if (active) setError(err instanceof ApiError ? err.message : 'Something went wrong.');
+        if (active) {
+          setError(err instanceof ApiError && err.status === 401 ? 'Session expired. Please sign in again.' : err instanceof ApiError ? err.message : 'Something went wrong.');
+        }
       })
       .finally(() => {
         if (active) setLoading(false);

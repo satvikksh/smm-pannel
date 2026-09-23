@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { PANEL_THEMES, PANEL_THEME_LABELS, type PanelTheme } from '@smm/types';
+import { PANEL_THEMES, PANEL_THEME_DESCRIPTIONS, PANEL_THEME_LABELS, type PanelTheme } from '@smm/types';
 import { Badge } from './badge';
 import { Button } from './primitives';
 import { Card, CardHeader } from './card';
@@ -100,7 +100,7 @@ export function UserThemeAdminSettings({ request }: { request: RequestFn }) {
                     {PANEL_THEME_LABELS[theme]}
                     {isActive ? <Badge>Active</Badge> : null}
                   </p>
-                  <p className="text-xs text-muted-foreground">{allowedDescription(theme)}</p>
+                  <p className="text-xs text-muted-foreground">{PANEL_THEME_DESCRIPTIONS[theme]}</p>
                 </div>
               </div>
               <Button
@@ -139,15 +139,4 @@ export function UserThemeAdminSettings({ request }: { request: RequestFn }) {
       </div>
     </Card>
   );
-}
-
-function allowedDescription(theme: PanelTheme): string {
-  switch (theme) {
-    case 'modern-light':
-      return 'Clean light interface';
-    case 'modern-dark':
-      return 'Premium navy dark mode';
-    case 'premium-gradient':
-      return 'Vibrant gradient colors';
-  }
 }

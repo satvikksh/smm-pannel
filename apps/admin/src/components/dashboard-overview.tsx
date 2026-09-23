@@ -99,21 +99,21 @@ export function DashboardOverview() {
           ) : (users.data?.items.length ?? 0) === 0 ? (
             <EmptyState title="No users yet" />
           ) : (
-            <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
+            <ul className="divide-y divide-border">
               {(users.data?.items ?? []).map((user) => (
                 <li key={user.id} className="flex items-center justify-between gap-3 py-3">
                   <div className="min-w-0">
                     <Link
                       href={`/users/${user.id}`}
-                      className="block truncate text-sm font-semibold text-zinc-800 hover:text-indigo-600 dark:text-zinc-100"
+                      className="block truncate text-sm font-semibold text-foreground hover:text-primary text-foreground"
                     >
                       {user.name}
                     </Link>
-                    <p className="truncate text-xs text-zinc-500">{user.email}</p>
+                    <p className="truncate text-xs text-muted-foreground">{user.email}</p>
                   </div>
                   <div className="text-right">
                     <StatusBadge status={user.status} />
-                    <p className="mt-1 text-xs text-zinc-500">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       {user.wallet ? formatMoney(user.wallet.balance) : '—'}
                     </p>
                   </div>
@@ -162,11 +162,11 @@ export function DashboardOverview() {
                     <Td>
                       <Link
                         href={`/orders/${order.id}`}
-                        className="font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+                        className="font-semibold text-primary hover:underline"
                       >
                         #{shortId(order.id)}
                       </Link>
-                      <span className="ml-2 text-xs text-zinc-400">{formatDateShort(order.createdAt)}</span>
+                      <span className="ml-2 text-xs text-muted-foreground">{formatDateShort(order.createdAt)}</span>
                     </Td>
                     <Td className="max-w-[160px] truncate">{order.serviceName}</Td>
                     <Td className="tabular-nums">{formatMoney(order.price)}</Td>

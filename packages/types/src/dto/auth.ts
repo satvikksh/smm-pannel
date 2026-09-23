@@ -9,14 +9,13 @@ export const loginSchema = z.object({
 export type LoginInput = z.infer<typeof loginSchema>;
 
 /**
- * Admin login additionally requires the license key assigned to the admin. The
- * key is validated server-side together with the credentials, role and license
- * state, so an admin session cannot be created without a valid, active license.
+ * Admin login. Admins no longer type a license key: the license assigned to
+ * their account is detected server-side from the database on login. The key is
+ * only ever read (never written) by the billing/system side of the platform.
  */
-export const adminLoginSchema = loginSchema.extend({
-  // Length is validated here; presence is enforced by the login service so a
-  // missing key surfaces the same LICENSE_INVALID error as an invalid one.
-  licenseKey: z.string().trim().max(64, 'License key is too long').optional().default(''),
+export const adminLoginSchema = z.object({
+  email: z.string().trim().toLowerCase().email('Enter a valid email address'),
+  password: z.string().min(1, 'Password is required'),
 });
 
 export type AdminLoginInput = z.infer<typeof adminLoginSchema>;

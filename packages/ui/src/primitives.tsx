@@ -14,11 +14,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const buttonBase =
-  'inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 disabled:cursor-not-allowed disabled:opacity-60';
+  'inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98]';
 
 const buttonVariants: Record<ButtonVariant, string> = {
   primary:
-    'bg-primary text-primary-foreground shadow-[var(--primary-glow)] [background-image:var(--primary-gradient)] hover:brightness-[1.05] active:brightness-95',
+    'bg-primary text-primary-foreground shadow-[var(--primary-glow)] [background-image:var(--primary-gradient)] hover:brightness-[1.05] hover:shadow-[var(--accent-glow)] active:brightness-95',
   secondary:
     'bg-secondary text-secondary-foreground hover:brightness-[1.08]',
   danger: 'bg-danger text-white shadow-sm hover:brightness-[1.05] active:brightness-95',

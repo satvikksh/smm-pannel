@@ -45,6 +45,7 @@ import {
   Copy,
   Globe,
   Palette,
+  Inbox,
 } from 'lucide-react';
 
 /** Google brand "G" mark, sized like a lucide icon. */
@@ -125,6 +126,7 @@ export const Icons = {
   Copy: Copy,
   Subdomain: Globe,
   Palette: Palette,
+  Inbox: Inbox,
   Google: GoogleG,
 };
 

@@ -155,8 +155,8 @@ export default function AdminThemesPage() {
                 {items.map((admin) => (
                   <Tr key={admin.id}>
                     <Td>
-                      <p className="font-semibold text-zinc-800 dark:text-zinc-100">{admin.name}</p>
-                      <p className="text-xs text-zinc-500">{admin.email}</p>
+                      <p className="font-semibold text-foreground">{admin.name}</p>
+                      <p className="text-xs text-muted-foreground">{admin.email}</p>
                     </Td>
                     <Td>
                       <Badge>{PANEL_THEME_LABELS[admin.adminTheme.theme] ?? admin.adminTheme.theme}</Badge>
@@ -182,19 +182,19 @@ export default function AdminThemesPage() {
             </Table>
           </div>
 
-          <ul className="divide-y divide-zinc-100 lg:hidden dark:divide-zinc-800">
+          <ul className="divide-y divide-border lg:hidden dark:divide-border">
             {items.map((admin) => (
               <li key={admin.id} className="space-y-2 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-zinc-800 dark:text-zinc-100">{admin.name}</p>
-                    <p className="truncate text-xs text-zinc-500">{admin.email}</p>
+                    <p className="truncate text-sm font-semibold text-foreground">{admin.name}</p>
+                    <p className="truncate text-xs text-muted-foreground">{admin.email}</p>
                   </div>
                   <Button variant="outline" size="sm" onClick={() => openEditor(admin)}>
                     Edit
                   </Button>
                 </div>
-                <div className="flex flex-wrap gap-1 text-xs text-zinc-500">
+                <div className="flex flex-wrap gap-1 text-xs text-muted-foreground">
                   <Badge>Panel: {PANEL_THEME_LABELS[admin.adminTheme.theme] ?? admin.adminTheme.theme}</Badge>
                   <Badge>Override: {admin.userPanel.allowUserOverride ? 'enabled' : 'disabled'}</Badge>
                 </div>
@@ -247,7 +247,7 @@ export default function AdminThemesPage() {
                       type="button"
                       onClick={() => toggleEnabled(theme)}
                       className={`cursor-pointer rounded-2xl border-2 p-2 text-left transition ${
-                        active ? 'border-indigo-500 ring-1 ring-indigo-500' : 'border-border hover:border-muted-foreground'
+                        active ? 'border-ring ring-1 ring-ring' : 'border-border hover:border-muted-foreground'
                       }`}
                       aria-pressed={active}
                     >
@@ -255,13 +255,13 @@ export default function AdminThemesPage() {
                         <ThemePreviewCard theme={theme} />
                       </div>
                       <div className="mt-2 flex items-center justify-between gap-2 px-1">
-                        <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-100">
+                        <span className="text-xs font-semibold text-foreground">
                           {PANEL_THEME_LABELS[theme]}
                         </span>
                         {active ? (
                           <Badge>on</Badge>
                         ) : (
-                          <span className="text-[10px] font-semibold uppercase text-zinc-400">off</span>
+                          <span className="text-[10px] font-semibold uppercase text-muted-foreground">off</span>
                         )}
                       </div>
                     </button>

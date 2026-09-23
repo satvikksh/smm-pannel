@@ -31,6 +31,12 @@ export interface UserRecord {
   profileImage?: string | null;
   /** True when the identity provider confirmed the account email. */
   emailVerified?: boolean;
+  /** Super Admin (reviewer) who decided this admin registration, when decided. */
+  approvedBy?: mongoose.Types.ObjectId | null;
+  /** When the Super Admin approved or rejected this admin registration. */
+  approvedAt?: Date | null;
+  /** Reason a Super Admin rejected this admin registration. */
+  rejectionReason?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -58,7 +64,7 @@ const userSchema = new Schema<UserRecord>(
     status: {
       type: String,
       required: true,
-      enum: ['active', 'suspended', 'inactive', 'deleted'],
+      enum: ['active', 'suspended', 'inactive', 'deleted', 'pending', 'rejected'],
       default: 'active',
       index: true,
     },
@@ -67,6 +73,9 @@ const userSchema = new Schema<UserRecord>(
     subdomain: { type: String, default: null },
     subdomainStatus: { type: String, enum: ['active', 'disabled'], default: null },
     subdomainCreatedAt: { type: Date, default: null },
+    approvedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+    approvedAt: { type: Date, default: null },
+    rejectionReason: { type: String, default: null, trim: true, maxlength: 500 },
     adminId: { type: Schema.Types.ObjectId, ref: 'User', default: null, index: true },
     assignedTo: { type: Schema.Types.ObjectId, ref: 'User', default: null, index: true },
     parentAdminId: { type: Schema.Types.ObjectId, ref: 'User', default: null, index: true },

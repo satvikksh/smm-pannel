@@ -171,18 +171,18 @@ export default function PaymentsPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="truncate text-base font-semibold text-zinc-900 dark:text-zinc-50">
+                    <h3 className="truncate text-base font-semibold text-foreground">
                       {method.name}
                     </h3>
                     <Badge>{method.code}</Badge>
                   </div>
-                  <p className="mt-1 text-xs text-zinc-400">Added {formatDateShort(method.createdAt)}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Added {formatDateShort(method.createdAt)}</p>
                 </div>
                 <span
                   className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${
                     method.enabled
                       ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400'
-                      : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400'
+                      : 'bg-muted text-muted-foreground bg-muted text-muted-foreground'
                   }`}
                 >
                   {method.enabled ? 'enabled' : 'disabled'}
@@ -190,7 +190,7 @@ export default function PaymentsPage() {
               </div>
 
               {method.instructions ? (
-                <p className="mt-3 whitespace-pre-line text-sm text-zinc-600 dark:text-zinc-300">
+                <p className="mt-3 whitespace-pre-line text-sm text-foreground">
                   {method.instructions}
                 </p>
               ) : null}
@@ -268,17 +268,17 @@ export default function PaymentsPage() {
               className="font-mono text-xs"
             />
           </Field>
-          <label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-200">
+          <label className="flex items-center gap-2 text-sm text-foreground">
             <input
               type="checkbox"
               checked={form.enabled}
               onChange={(e) => setForm((f) => ({ ...f, enabled: e.target.checked }))}
-              className="h-4 w-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500"
+              className="h-4 w-4 rounded border-border text-primary focus:ring-ring"
             />
             Enabled for deposits
           </label>
           {error ? (
-            <p className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-600 dark:bg-red-500/10 dark:text-red-400">
+            <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm font-medium text-danger">
               {error}
             </p>
           ) : null}

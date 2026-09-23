@@ -122,7 +122,7 @@ export async function issueSession(user: UserRecord, role: Role, res: Response):
  * session in order to activate/renew a license on the /license page.
  */
 export async function assertAccountAccess(user: UserRecord, role: Role): Promise<void> {
-  const blocked = accountError(user.status);
+  const blocked = accountError(user.status, user.rejectionReason);
   if (blocked) throw ApiError.forbidden(blocked);
   if (user.role !== role) {
     throw ApiError.forbidden('This account is not allowed to use this portal.');
@@ -251,7 +251,7 @@ export async function authorizeSession(req: Request, role: Role): Promise<Author
     throw ApiError.forbidden('This account is not allowed to use this portal.');
   }
 
-  const blocked = accountError(user.status);
+  const blocked = accountError(user.status, user.rejectionReason);
   if (blocked) throw ApiError.forbidden(blocked);
 
   // Tenant isolation: when the admin panel is served from a subdomain, the

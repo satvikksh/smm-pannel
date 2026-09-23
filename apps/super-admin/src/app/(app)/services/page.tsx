@@ -187,9 +187,9 @@ export default function ServicesPage() {
                 {items.map((service) => (
                   <Tr key={service.id}>
                     <Td className="font-medium">{service.name}</Td>
-                    <Td className="text-zinc-500">{service.categoryName || '—'}</Td>
+                    <Td className="text-muted-foreground">{service.categoryName || '—'}</Td>
                     <Td className="tabular-nums">{formatMoney(service.price)}</Td>
-                    <Td className="tabular-nums text-zinc-500">
+                    <Td className="tabular-nums text-muted-foreground">
                       {service.minOrder} / {service.maxOrder}
                     </Td>
                     <Td>
@@ -210,14 +210,14 @@ export default function ServicesPage() {
               </TBody>
             </Table>
           </div>
-          <ul className="divide-y divide-zinc-100 sm:hidden dark:divide-zinc-800">
+          <ul className="divide-y divide-border sm:hidden dark:divide-border">
             {items.map((service) => (
               <li key={service.id} className="flex items-start justify-between gap-3 p-4">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+                  <p className="truncate text-sm font-semibold text-foreground">
                     {service.name}
                   </p>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-muted-foreground">
                     {service.categoryName || '—'} · {formatMoney(service.price)} · {service.minOrder}/{service.maxOrder}
                   </p>
                 </div>
@@ -318,7 +318,7 @@ export default function ServicesPage() {
             </Select>
           </Field>
           {error ? (
-            <p className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-600 dark:bg-red-500/10 dark:text-red-400">
+            <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm font-medium text-danger">
               {error}
             </p>
           ) : null}

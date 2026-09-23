@@ -132,23 +132,23 @@ export default function LicenseDetailPage() {
           <CardHeader title="License details" />
           <dl className="grid gap-4 sm:grid-cols-2">
             <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-400">Admin</dt>
-              <dd className="mt-1 text-sm text-zinc-800 dark:text-zinc-100">
+              <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Admin</dt>
+              <dd className="mt-1 text-sm text-foreground">
                 {license.adminUserName ? (
                   <Link
                     href={`/admins/${license.adminUserId}`}
-                    className="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+                    className="font-medium text-primary hover:underline"
                   >
                     {license.adminUserName}
                   </Link>
                 ) : (
                   '—'
                 )}
-                <span className="block text-xs text-zinc-500">{license.adminUserEmail || ''}</span>
+                <span className="block text-xs text-muted-foreground">{license.adminUserEmail || ''}</span>
               </dd>
             </div>
             <div className="sm:col-span-2">
-              <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-400">Panel URL</dt>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Panel URL</dt>
               <dd className="mt-1 flex flex-wrap items-center gap-2">
                 {license.adminSubdomain ? (
                   <>
@@ -156,7 +156,7 @@ export default function LicenseDetailPage() {
                       href={`https://${license.adminSubdomain}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+                      className="text-sm font-medium text-primary hover:underline"
                     >
                       {license.adminSubdomain}
                     </a>
@@ -169,22 +169,22 @@ export default function LicenseDetailPage() {
               </dd>
             </div>
             <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-400">Max users</dt>
-              <dd className="mt-1 text-sm text-zinc-800 dark:text-zinc-100">
+              <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Max users</dt>
+              <dd className="mt-1 text-sm text-foreground">
                 {license.maxUsers || 'Unlimited'}
               </dd>
             </div>
             <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-400">Issued</dt>
-              <dd className="mt-1 text-sm text-zinc-800 dark:text-zinc-100">{formatDate(license.issuedAt)}</dd>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Issued</dt>
+              <dd className="mt-1 text-sm text-foreground">{formatDate(license.issuedAt)}</dd>
             </div>
             <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-400">Expires</dt>
-              <dd className="mt-1 text-sm text-zinc-800 dark:text-zinc-100">{formatDate(license.expiresAt)}</dd>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Expires</dt>
+              <dd className="mt-1 text-sm text-foreground">{formatDate(license.expiresAt)}</dd>
             </div>
           </dl>
 
-          <div className="mt-5 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+          <div className="mt-5 border-t border-border pt-4 border-border">
             <div className="w-full sm:max-w-xs">
               <Field label="Status" htmlFor="license-status">
                 <Select
@@ -211,8 +211,8 @@ export default function LicenseDetailPage() {
             </Button>
           </div>
 
-          <div className="mt-5 border-t border-zinc-100 pt-4 dark:border-zinc-800">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">
+          <div className="mt-5 border-t border-border pt-4 border-border">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Panel URL controls
             </p>
             <div className="flex flex-wrap gap-2">
@@ -259,13 +259,13 @@ export default function LicenseDetailPage() {
               <li key={index} className="flex items-start gap-2">
                 <StatusBadge status={entry.status} />
                 <div className="text-xs">
-                  <p className="text-zinc-700 dark:text-zinc-200">{entry.reason || 'Status updated'}</p>
-                  <p className="text-zinc-400">{formatDateShort(entry.at)}</p>
+                  <p className="text-foreground">{entry.reason || 'Status updated'}</p>
+                  <p className="text-muted-foreground">{formatDateShort(entry.at)}</p>
                 </div>
               </li>
             ))}
           </ul>
-          <div className="mt-4 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+          <div className="mt-4 border-t border-border pt-3 border-border">
             <Badge>Key {license.licenseKey.slice(0, 4)}••••</Badge>
           </div>
         </Card>

@@ -66,7 +66,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <button
             key={t.id}
             onClick={() => dismiss(t.id)}
-            className="pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl border border-border bg-card/95 px-4 py-3 text-left text-card-foreground shadow-lg backdrop-blur"
+            className="theme-anim-toast pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl border border-border bg-card/95 px-4 py-3 text-left text-card-foreground shadow-lg backdrop-blur"
           >
             {t.type === 'success' && <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-success" />}
             {t.type === 'error' && <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-danger" />}

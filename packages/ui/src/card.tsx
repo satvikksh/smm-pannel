@@ -3,7 +3,7 @@ import type { HTMLAttributes, ReactNode } from 'react';
 export function Card({ className = '', children, ...rest }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={`rounded-2xl border border-border bg-card p-5 text-card-foreground shadow-sm ${className}`}
+      className={`rounded-2xl border border-border-strong bg-card p-5 text-card-foreground shadow-sm ${className}`}
       {...rest}
     >
       {children}
@@ -35,7 +35,7 @@ export function StatCard({
   hint?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 text-card-foreground shadow-sm">
+    <div className="rounded-2xl border border-border-strong bg-card p-4 text-card-foreground shadow-sm">
       <div className="flex items-center justify-between">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
         {icon ? <div className="text-primary">{icon}</div> : null}

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { ThemeProvider, ThemeScript, ToastProvider } from '@smm/ui';
+import { AdminPanelThemeProvider, AdminPanelThemeScript, ToastProvider } from '@smm/ui';
+import { getApiBase } from '@/lib/api';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -8,19 +9,19 @@ export const metadata: Metadata = {
     default: 'SMM Panel',
     template: '%s · SMM Panel',
   },
-  description: 'Buy social media marketing services, manage orders and your wallet.',
+  description: 'Manage admins, licenses, catalog, payments and the global platform theme.',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <ThemeScript />
+        <AdminPanelThemeScript />
       </head>
       <body>
-        <ThemeProvider>
+        <AdminPanelThemeProvider apiBase={getApiBase()} endpoint="/public/theme">
           <ToastProvider>{children}</ToastProvider>
-        </ThemeProvider>
+        </AdminPanelThemeProvider>
       </body>
     </html>
   );

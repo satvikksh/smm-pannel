@@ -30,7 +30,7 @@ export function CopyButton({
       onClick={copy}
       aria-label={label}
       title={label}
-      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-zinc-200 text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-indigo-600 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
     >
       {copied ? (
         <Icons.Success className="h-3.5 w-3.5 text-emerald-500" />

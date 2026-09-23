@@ -130,19 +130,19 @@ export default function UsersPage() {
                     <Td>
                       <Link
                         href={`/users/${user.id}`}
-                        className="font-semibold text-zinc-800 hover:text-indigo-600 dark:text-zinc-100"
+                        className="font-semibold text-foreground hover:text-primary text-foreground"
                       >
                         {user.name}
                       </Link>
-                      <p className="text-xs text-zinc-500">{user.email}</p>
+                      <p className="text-xs text-muted-foreground">{user.email}</p>
                     </Td>
-                    <Td className="text-zinc-500">{user.phone}</Td>
+                    <Td className="text-muted-foreground">{user.phone}</Td>
                     <Td className="tabular-nums">{user.wallet ? formatMoney(user.wallet.balance) : '—'}</Td>
                     <Td className="tabular-nums">{user.ordersCount}</Td>
                     <Td>
                       <StatusBadge status={user.status} />
                     </Td>
-                    <Td className="whitespace-nowrap text-zinc-500">{formatDateShort(user.createdAt)}</Td>
+                    <Td className="whitespace-nowrap text-muted-foreground">{formatDateShort(user.createdAt)}</Td>
                     <Td>
                       <div className="w-36">
                         <Select
@@ -164,19 +164,19 @@ export default function UsersPage() {
               </TBody>
             </Table>
           </div>
-          <ul className="divide-y divide-zinc-100 lg:hidden dark:divide-zinc-800">
+          <ul className="divide-y divide-border lg:hidden dark:divide-border">
             {items.map((user) => (
               <li key={user.id} className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <Link
                       href={`/users/${user.id}`}
-                      className="block truncate text-sm font-semibold text-zinc-800 dark:text-zinc-100"
+                      className="block truncate text-sm font-semibold text-foreground"
                     >
                       {user.name}
                     </Link>
-                    <p className="truncate text-xs text-zinc-500">{user.email}</p>
-                    <p className="mt-1 text-xs text-zinc-500">
+                    <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
                       {user.wallet ? formatMoney(user.wallet.balance) : '—'} · {user.ordersCount} orders
                     </p>
                   </div>

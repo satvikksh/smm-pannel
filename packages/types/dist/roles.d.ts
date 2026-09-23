@@ -27,6 +27,8 @@ export declare const ACCOUNT_STATUSES: {
     readonly SUSPENDED: "suspended";
     readonly INACTIVE: "inactive";
     readonly DELETED: "deleted";
+    readonly PENDING: "pending";
+    readonly REJECTED: "rejected";
 };
 export type AccountStatus = (typeof ACCOUNT_STATUSES)[keyof typeof ACCOUNT_STATUSES];
 export declare const LICENSE_STATUSES: {
@@ -79,10 +81,16 @@ export declare const AUDIT_ACTIONS: {
     readonly ADMIN_LOGIN: "admin.login";
     readonly USER_LOGIN: "user.login";
     readonly ADMIN_CREATE: "admin.create";
+    readonly ADMIN_REGISTER: "admin.register";
+    readonly ADMIN_APPROVE: "admin.approve";
+    readonly ADMIN_REJECT: "admin.reject";
     readonly ADMIN_UPDATE_STATUS: "admin.update_status";
     readonly ADMIN_RESET_PASSWORD: "admin.reset_password";
     readonly ADMIN_DELETE: "admin.delete";
     readonly ADMIN_SUBDOMAIN_UPDATE: "admin.subdomain.update";
+    readonly ADMIN_GOOGLE_REGISTER: "admin.google.register";
+    readonly ADMIN_GOOGLE_LOGIN: "admin.google.login";
+    readonly ADMIN_GOOGLE_LINK: "admin.google.link";
     readonly LICENSE_CREATE: "license.create";
     readonly LICENSE_UPDATE_STATUS: "license.update_status";
     readonly LICENSE_RENEW: "license.renew";
@@ -96,10 +104,16 @@ export declare const AUDIT_ACTIONS: {
     readonly SERVICE_UPDATE: "service.update";
     readonly CATEGORY_CREATE: "category.create";
     readonly CATEGORY_UPDATE: "category.update";
+    readonly ENGAGEMENT_BUNDLE_CREATE: "engagement_bundle.create";
+    readonly ENGAGEMENT_BUNDLE_UPDATE: "engagement_bundle.update";
+    readonly ENGAGEMENT_BUNDLE_DELETE: "engagement_bundle.delete";
+    readonly ENGAGEMENT_BUNDLE_STATUS: "engagement_bundle.update_status";
     readonly ORDER_UPDATE_STATUS: "order.update_status";
     readonly PAYMENT_METHOD_UPDATE: "payment_method.update";
     readonly SETTING_UPDATE: "setting.update";
     readonly SUPER_ADMIN_CHANGED_ADMIN_THEME: "super_admin.admin_theme.change";
+    readonly SUPER_ADMIN_CHANGED_PLATFORM_THEME: "super_admin.platform_theme.change";
+    readonly ADMIN_CHANGED_PANEL_THEME: "admin.panel_theme.change";
     readonly ADMIN_CHANGED_USER_THEME: "admin.user_theme.change";
     readonly PARTIAL_ADMIN_CHANGED_USER_THEME: "partial_admin.user_theme.change";
     readonly USER_THEME_OVERRIDE_CHANGED: "user.user_theme.override";

@@ -28,6 +28,10 @@ export {
   PANEL_THEMES,
   DEFAULT_PANEL_THEME,
   PANEL_THEME_LABELS,
+  PANEL_THEME_DESCRIPTIONS,
+  PANEL_THEME_SWATCHES,
+  PREMIUM_PANEL_THEMES,
+  PANEL_THEME_DARK,
   isPanelTheme,
 } from './user-panel-theme';
 export type { PanelTheme } from './user-panel-theme';
@@ -52,6 +56,9 @@ export type {
   AuthSessionState,
   Paginated,
   AnalyticsOverview,
+  EngagementBundle,
+  EngagementBundlePublic,
+  EngagementBundleCatalog,
 } from './entities';
 
 export {

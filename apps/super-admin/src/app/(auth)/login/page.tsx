@@ -46,8 +46,8 @@ export default function LoginPage() {
 
   return (
     <Card>
-      <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">Super admin sign in</h1>
-      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+      <h1 className="text-xl font-bold text-foreground">Super admin sign in</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
         Full platform control: admins, licenses, catalog and payments.
       </p>
 
@@ -76,7 +76,7 @@ export default function LoginPage() {
         </Field>
 
         {error ? (
-          <p className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-600 dark:bg-red-500/10 dark:text-red-400">
+          <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm font-medium text-danger">
             {error}
           </p>
         ) : null}

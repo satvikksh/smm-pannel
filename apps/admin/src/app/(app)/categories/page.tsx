@@ -150,8 +150,8 @@ export default function CategoriesPage() {
                 {items.map((category) => (
                   <Tr key={category._id}>
                     <Td className="font-medium">{category.name}</Td>
-                    <Td className="font-mono text-xs text-zinc-500">{category.slug}</Td>
-                    <Td className="text-zinc-500">{category.icon}</Td>
+                    <Td className="font-mono text-xs text-muted-foreground">{category.slug}</Td>
+                    <Td className="text-muted-foreground">{category.icon}</Td>
                     <Td className="tabular-nums">{category.sortOrder}</Td>
                     <Td>
                       <StatusBadge status={category.status} />
@@ -171,12 +171,12 @@ export default function CategoriesPage() {
               </TBody>
             </Table>
           </div>
-          <ul className="divide-y divide-zinc-100 sm:hidden dark:divide-zinc-800">
+          <ul className="divide-y divide-border sm:hidden dark:divide-border">
             {items.map((category) => (
               <li key={category._id} className="flex items-center justify-between gap-3 p-4">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-zinc-800 dark:text-zinc-100">{category.name}</p>
-                  <p className="text-xs text-zinc-500">
+                  <p className="truncate text-sm font-semibold text-foreground">{category.name}</p>
+                  <p className="text-xs text-muted-foreground">
                     {category.slug} · order {category.sortOrder}
                   </p>
                 </div>
@@ -238,7 +238,7 @@ export default function CategoriesPage() {
             </Select>
           </Field>
           {error ? (
-            <p className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-600 dark:bg-red-500/10 dark:text-red-400">
+            <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm font-medium text-danger">
               {error}
             </p>
           ) : null}

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import { AuditLog, License, User, mongoose, type LicenseRecord, type UserRecord } from '@smm/database';
 import { hashPassword, generateLicenseKey } from '@smm/security';
 import {
@@ -27,7 +28,10 @@ import { serializeAuditLog, serializeUser } from '../../helpers/transform';
 export function superAdminAdminsRouter(): Router {
   const router = Router();
 
-  router.get('/', validateQuery(paginationSchema.extend({ status: updateAdminStatusSchema.shape.status.optional() })), async (req, res) => {
+  router.get(
+    '/',
+    validateQuery(paginationSchema.extend({ status: z.enum(['active', 'suspended', 'inactive', 'pending', 'rejected']).optional() })),
+    async (req, res) => {
     const q = res.locals.query as {
       page: number;
       limit: number;

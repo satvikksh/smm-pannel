@@ -60,6 +60,7 @@ const navSections: NavSection[] = [
     items: [
       { href: '/', label: 'Dashboard', icon: Icons.Dashboard, exact: true },
       { href: '/services', label: 'Services', icon: Icons.Services },
+      { href: '/engagement', label: 'Engagement', icon: Icons.Bolt },
       { href: '/orders', label: 'Orders', icon: Icons.Orders },
       { href: '/wallet', label: 'Wallet', icon: Icons.Wallet },
       { href: '/settings', label: 'Settings', icon: Icons.Settings },

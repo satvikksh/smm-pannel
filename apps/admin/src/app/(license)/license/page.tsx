@@ -81,22 +81,22 @@ export default function LicensePage() {
 
   return (
     <Card>
-      <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">Activate your license</h1>
-      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+      <h1 className="text-xl font-bold text-foreground">Activate your license</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
         Your account is signed in, but an active license is required to use the Admin panel. Enter the
         license key issued by the platform Super Admin.
       </p>
 
       {current ? (
-        <div className="mt-5 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
+        <div className="mt-5 rounded-xl border border-border p-4 border-border">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-xs font-semibold uppercase tracking-wide text-zinc-400">Current license</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Current license</span>
             <StatusBadge status={current.status} />
           </div>
-          <p className="mt-2 font-mono text-xs text-zinc-600 dark:text-zinc-300">{current.licenseKey}</p>
-          <p className="mt-1 text-xs text-zinc-500">Expires {formatDateShort(current.expiresAt)}</p>
+          <p className="mt-2 font-mono text-xs text-foreground">{current.licenseKey}</p>
+          <p className="mt-1 text-xs text-muted-foreground">Expires {formatDateShort(current.expiresAt)}</p>
           {license?.reason ? (
-            <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-400">{license.reason}</p>
+            <p className="mt-2 text-sm font-medium text-danger">{license.reason}</p>
           ) : null}
         </div>
       ) : (
@@ -119,7 +119,7 @@ export default function LicensePage() {
         </Field>
 
         {error ? (
-          <p className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-600 dark:bg-red-500/10 dark:text-red-400">
+          <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm font-medium text-danger">
             {error}
           </p>
         ) : null}
@@ -133,7 +133,7 @@ export default function LicensePage() {
         type="button"
         onClick={signOut}
         disabled={signingOut}
-        className="mt-4 w-full text-center text-xs font-medium text-zinc-500 hover:text-zinc-700 disabled:opacity-50 dark:text-zinc-400 dark:hover:text-zinc-200"
+        className="mt-4 w-full text-center text-xs font-medium text-muted-foreground hover:text-foreground disabled:opacity-50"
       >
         {signingOut ? 'Signing out…' : 'Sign in with a different account'}
       </button>

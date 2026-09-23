@@ -34,5 +34,5 @@ export declare function adminLicenseVerdict(user: Pick<UserRecord, 'licenseId'>,
     valid: boolean;
     reason: string | null;
 };
-export declare function accountError(status: AccountStatus): string | null;
+export declare function accountError(status: AccountStatus, rejectionReason?: string | null): string | null;
 export declare function objectIdEquals(a: Types.ObjectId, b: string): boolean;

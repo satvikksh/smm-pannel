@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { Order, Service, Transaction, Wallet, Category } from '@smm/database';
-import { ApiError, ORDER_STATUSES, createOrderSchema } from '@smm/types';
+import { EngagementBundle, Order, Service, Transaction, Wallet, Category } from '@smm/database';
+import { ApiError, ORDER_STATUSES, createBundleOrderSchema, createOrderSchema } from '@smm/types';
 import type { AuthedRequest } from '@smm/auth';
 import { validateBody } from '../../middleware/validate';
 import { serializeOrder } from '../../helpers/transform';
@@ -54,6 +54,68 @@ export function userOrdersRouter(): Router {
       balanceAfter: newBalance,
       reference: `ORD-${order._id.toString().slice(-8).toUpperCase()}`,
       description: `Order placed: ${service.name} (${body.quantity})`,
+    });
+
+    res.status(201).json({ data: serializeOrder(order) });
+  });
+
+  /**
+   * Engagement bundle order. Only `bundleId` + `link` are accepted — any
+   * client-sent price/quantity is stripped by zod and the server prices the
+   * order exclusively from the stored, active bundle.
+   */
+  router.post('/bundle', validateBody(createBundleOrderSchema), async (req: AuthedRequest, res) => {
+    const body = req.body as { bundleId: string; link: string };
+    const userId = req.ctx.user._id;
+
+    const bundle = await EngagementBundle.findOne({ _id: body.bundleId, status: 'active', deletedAt: null }).lean();
+    if (!bundle) {
+      const existing = await EngagementBundle.findById(body.bundleId)
+        .select({ status: 1, deletedAt: 1 })
+        .lean();
+      if (existing) {
+        throw ApiError.badRequest('This package is currently unavailable. Please choose another one.');
+      }
+      throw ApiError.notFound('Engagement bundle not found.');
+    }
+
+    const quantity = bundle.quantity;
+    const price = Math.round(bundle.price * 100) / 100;
+    const categoryName = bundle.type.charAt(0).toUpperCase() + bundle.type.slice(1);
+
+    const wallet = await Wallet.findOne({ userId }).lean();
+    if (!wallet) throw ApiError.notFound('Wallet not found.');
+    if (wallet.balance < price) {
+      throw ApiError.badRequest('Insufficient balance. Please add funds to your wallet.');
+    }
+
+    const order = await Order.create({
+      userId,
+      serviceId: bundle._id,
+      serviceName: bundle.displayName,
+      categoryName,
+      link: body.link.trim(),
+      quantity,
+      price,
+      bundleId: bundle._id,
+      bundleType: bundle.type,
+      currency: bundle.currency,
+      status: ORDER_STATUSES.PENDING,
+      startCounter: 0,
+      remaining: quantity,
+    });
+
+    const newBalance = Number((wallet.balance - price).toFixed(2));
+    await Wallet.updateOne({ _id: wallet._id }, { $set: { balance: newBalance, totalSpent: wallet.totalSpent + price } });
+
+    await Transaction.create({
+      userId,
+      type: 'debit',
+      status: 'completed',
+      amount: price,
+      balanceAfter: newBalance,
+      reference: `ORD-${order._id.toString().slice(-8).toUpperCase()}`,
+      description: `Engagement order: ${bundle.displayName} (${quantity})`,
     });
 
     res.status(201).json({ data: serializeOrder(order) });

@@ -15,7 +15,7 @@ export function BarChart({ data, height = 120 }: { data: BarDatum[]; height?: nu
             <div
               key={String(i)}
               title={`${d.label}: ${d.value}`}
-              className="w-full rounded-t-md bg-primary transition-all"
+              className="w-full rounded-t-md bg-primary transition-all [background-image:var(--primary-gradient)]"
               style={{ height: `${Math.max(4, (d.value / max) * 100)}%` }}
             />
           </div>
@@ -62,8 +62,8 @@ export function LineChart({
       <svg width={width} height={height} className="overflow-visible">
         <defs>
           <linearGradient id="smmLineGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#6366f1" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#6366f1" stopOpacity="0.02" />
+            <stop offset="0%" style={{ stopColor: 'var(--primary)' }} stopOpacity="0.35" />
+            <stop offset="100%" style={{ stopColor: 'var(--primary)' }} stopOpacity="0.02" />
           </linearGradient>
         </defs>
         <polygon points={area} fill="url(#smmLineGrad)" />

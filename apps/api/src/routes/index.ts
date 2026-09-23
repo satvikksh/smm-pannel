@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { getPlatformThemeMeta } from '@smm/database';
 import { userRouter } from './user';
 import { adminRouter } from './admin';
 import { superAdminRouter } from './super-admin';
@@ -13,6 +14,11 @@ export function apiRouter(): Router {
 
   router.get('/settings/public', async (_req, res) => {
     res.json({ data: await buildPublicSettings() });
+  });
+
+  router.get('/theme', async (_req, res) => {
+    const meta = await getPlatformThemeMeta();
+    res.json({ data: { theme: meta.theme, updatedAt: meta.updatedAt } });
   });
 
   router.use('/tenant', tenantRouter());

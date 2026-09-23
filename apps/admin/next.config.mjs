@@ -1,9 +1,11 @@
 /** @type {import('next').NextConfig} */
 
-// Same-origin API proxy target. vercel.app is a public suffix, so the panel and
-// the API are different sites; proxying /api/v1 through the panel origin keeps
-// the HttpOnly session cookies first-party and immune to third-party cookie
-// blocking. Override with ADMIN_API_PROXY_TARGET when self-hosting.
+// Same-origin API proxy target. vercel.app is a public suffix, so the admin
+// panel subdomain and the API are different sites. Proxying /api/v1, /api/auth
+// and /health through the panel origin keeps Google OAuth + HttpOnly session
+// cookies first-party ("first-party" relative to the admin panel host) and
+// immune to third-party cookie blocking. Override with ADMIN_API_PROXY_TARGET
+// when self-hosting.
 const API_PROXY_TARGET =
   process.env.ADMIN_API_PROXY_TARGET ?? 'https://smm-pannel-api.vercel.app';
 
@@ -15,6 +17,14 @@ const nextConfig = {
       {
         source: '/api/v1/:path*',
         destination: `${API_PROXY_TARGET}/api/v1/:path*`,
+      },
+      {
+        source: '/api/auth/:path*',
+        destination: `${API_PROXY_TARGET}/api/auth/:path*`,
+      },
+      {
+        source: '/health',
+        destination: `${API_PROXY_TARGET}/health`,
       },
     ];
   },

@@ -40,11 +40,11 @@ export function Modal({
 
   return (
     <div className="fixed inset-0 z-[90] flex items-end justify-center sm:items-center">
-      <button aria-label="Close modal" onClick={onClose} className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+      <button aria-label="Close modal" onClick={onClose} className="theme-anim-fade absolute inset-0 bg-black/50 backdrop-blur-sm" />
       <div
         role="dialog"
         aria-modal="true"
-        className={`relative z-10 w-full ${widths[size]} max-h-[92vh] overflow-y-auto rounded-t-2xl bg-card p-5 text-card-foreground shadow-2xl sm:rounded-2xl`}
+        className={`theme-anim-modal relative z-10 w-full ${widths[size]} max-h-[92vh] overflow-y-auto rounded-t-2xl border border-border bg-card p-5 text-card-foreground shadow-2xl sm:rounded-2xl`}
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>

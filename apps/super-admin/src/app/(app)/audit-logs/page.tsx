@@ -140,34 +140,34 @@ export default function AuditLogsPage() {
                 {items.map((log) => (
                   <Tr key={log.id}>
                     <Td>
-                      <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">{log.actorName}</p>
+                      <p className="text-sm font-semibold text-foreground">{log.actorName}</p>
                       <Badge>{log.actorRole.replace(/_/g, ' ')}</Badge>
                     </Td>
                     <Td className="font-mono text-xs">{log.action}</Td>
                     <Td>
-                      <p className="text-sm text-zinc-700 dark:text-zinc-200">{log.targetLabel || '—'}</p>
-                      <p className="text-xs text-zinc-400">{log.targetType}</p>
+                      <p className="text-sm text-foreground">{log.targetLabel || '—'}</p>
+                      <p className="text-xs text-muted-foreground">{log.targetType}</p>
                     </Td>
                     <Td>
                       <StatusBadge status={log.result === 'success' ? 'completed' : 'failed'} />
                     </Td>
-                    <Td className="font-mono text-xs text-zinc-500">{log.ip || '—'}</Td>
-                    <Td className="whitespace-nowrap text-zinc-500">{formatDateShort(log.createdAt)}</Td>
+                    <Td className="font-mono text-xs text-muted-foreground">{log.ip || '—'}</Td>
+                    <Td className="whitespace-nowrap text-muted-foreground">{formatDateShort(log.createdAt)}</Td>
                   </Tr>
                 ))}
               </TBody>
             </Table>
           </div>
-          <ul className="divide-y divide-zinc-100 lg:hidden dark:divide-zinc-800">
+          <ul className="divide-y divide-border lg:hidden dark:divide-border">
             {items.map((log) => (
               <li key={log.id} className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+                    <p className="truncate text-sm font-semibold text-foreground">
                       {log.actorName}
                     </p>
-                    <p className="truncate font-mono text-xs text-zinc-500">{log.action}</p>
-                    <p className="mt-1 truncate text-xs text-zinc-400">
+                    <p className="truncate font-mono text-xs text-muted-foreground">{log.action}</p>
+                    <p className="mt-1 truncate text-xs text-muted-foreground">
                       {log.targetLabel || log.targetType} · {formatDateShort(log.createdAt)}
                     </p>
                   </div>

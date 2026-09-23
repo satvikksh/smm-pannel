@@ -45,6 +45,9 @@ function toSafeUser(u) {
     authProvider: u.authProvider ?? "local",
     profileImage: u.profileImage ?? null,
     emailVerified: u.emailVerified ?? false,
+    approvedBy: u.approvedBy ? String(u.approvedBy) : null,
+    approvedAt: u.approvedAt ? u.approvedAt.toISOString() : null,
+    rejectionReason: u.rejectionReason ?? null,
     createdAt: u.createdAt.toISOString(),
     updatedAt: u.updatedAt.toISOString()
   };
@@ -106,10 +109,14 @@ function adminLicenseVerdict(user, license) {
   const err = licenseError(license);
   return { valid: !err, reason: err?.message ?? null };
 }
-function accountError(status) {
+function accountError(status, rejectionReason) {
   if (status === "suspended") return "This account is suspended.";
   if (status === "inactive") return "This account is not active yet.";
   if (status === "deleted") return "This account no longer exists.";
+  if (status === "pending") return "This account is awaiting approval by the Super Admin.";
+  if (status === "rejected") {
+    return rejectionReason ? `This account was not approved. Reason: ${rejectionReason}` : "This account was not approved by the Super Admin.";
+  }
   return null;
 }
 
@@ -265,7 +272,7 @@ async function issueSession(user, role, res) {
   setSessionCookies(res, role, accessToken, refreshToken, env);
 }
 async function assertAccountAccess(user, role) {
-  const blocked = accountError(user.status);
+  const blocked = accountError(user.status, user.rejectionReason);
   if (blocked) throw ApiError3.forbidden(blocked);
   if (user.role !== role) {
     throw ApiError3.forbidden("This account is not allowed to use this portal.");
@@ -351,7 +358,7 @@ async function authorizeSession(req, role) {
   if (user.role !== role) {
     throw ApiError3.forbidden("This account is not allowed to use this portal.");
   }
-  const blocked = accountError(user.status);
+  const blocked = accountError(user.status, user.rejectionReason);
   if (blocked) throw ApiError3.forbidden(blocked);
   if (role === "admin") {
     const tenantAdmin = await resolveTenantAdminUser(user);

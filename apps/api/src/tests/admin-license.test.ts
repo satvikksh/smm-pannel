@@ -22,7 +22,7 @@ async function createUnlicensedAdmin(t: TestAgent, email: string) {
 }
 
 describe('admin license login gate (§23, §24)', () => {
-  it('creates an admin with an active license; the key unlocks login and licensed routes', async () => {
+  it('creates an admin with an active license; login needs no key and licensed routes unlock', async () => {
     const t = testApp();
     await loginSuperAdmin(t);
     const admin = await createAdminViaApi(t, 'lc_create@example.test');
@@ -32,7 +32,8 @@ describe('admin license login gate (§23, §24)', () => {
     expect(list.status).toBe(200);
     expect(list.body.data.items.length).toBeGreaterThanOrEqual(1);
 
-    const login = await loginAdmin(t, admin.email, admin.password, admin.licenseKey);
+    // No licenseKey input at all: the assigned license is auto-detected.
+    const login = await loginAdmin(t, admin.email, admin.password);
     expect(login.status).toBe(200);
     expect(login.body.data.licenseValid).toBe(true);
     expect(login.body.data.license.status).toBe('active');
@@ -45,13 +46,13 @@ describe('admin license login gate (§23, §24)', () => {
     expect((await t.agent.get('/api/v1/admin/users')).status).toBe(200);
   });
 
-  it('binds the license key to the account on login (no separate activation needed)', async () => {
+  it('detects and binds the assigned license on login (no separate activation needed)', async () => {
     const t = testApp();
     await loginSuperAdmin(t);
     const admin = await createAdminViaApi(t, 'lc_bind@example.test');
     await User.updateOne({ _id: admin.adminId }, { $set: { licenseId: null } });
 
-    const login = await loginAdmin(t, admin.email, admin.password, admin.licenseKey);
+    const login = await loginAdmin(t, admin.email, admin.password);
     expect(login.status).toBe(200);
     expect(login.body.data.licenseValid).toBe(true);
 
@@ -60,38 +61,29 @@ describe('admin license login gate (§23, §24)', () => {
     expect((await t.agent.get('/api/v1/admin/users')).status).toBe(200);
   });
 
+  it('ignores a licenseKey field sent with the login (no key is consulted)', async () => {
+    const t = testApp();
+    await loginSuperAdmin(t);
+    const admin = await createAdminViaApi(t, 'lc_ignored@example.test');
+
+    // A valid-looking key that is NOT this admin's still succeeds, because the
+    // license is no longer user-supplied — it is bound to the account.
+    const garbage = await t.agent
+      .post('/api/v1/auth/admin/login')
+      .send({ email: admin.email, password: admin.password, licenseKey: 'SMM-0000-0000-0000-0000' });
+    expect(garbage.status).toBe(200);
+    expect(garbage.body.data.licenseValid).toBe(true);
+  });
+
   it('rejects login when no license is assigned to the admin (403)', async () => {
     const t = testApp();
     await loginSuperAdmin(t);
     const admin = await createUnlicensedAdmin(t, 'lc_none@example.test');
 
-    const login = await loginAdmin(t, admin.email, admin.password, admin.licenseKey);
+    const login = await loginAdmin(t, admin.email, admin.password);
     expect(login.status).toBe(403);
     expect(login.body.error.code).toBe('LICENSE_INVALID');
     expect(login.body.error.message).toMatch(/No license is assigned to this admin/i);
-  });
-
-  it('rejects an unrecognised license key at login (403)', async () => {
-    const t = testApp();
-    await loginSuperAdmin(t);
-    const admin = await createAdminViaApi(t, 'lc_bogus@example.test');
-
-    const login = await loginAdmin(t, admin.email, admin.password, 'SMM-0000-0000-0000-0000');
-    expect(login.status).toBe(403);
-    expect(login.body.error.code).toBe('LICENSE_INVALID');
-    expect(login.body.error.message).toMatch(/Invalid license key/i);
-  });
-
-  it("rejects another admin's license key at login (403, no cross-admin reuse)", async () => {
-    const t = testApp();
-    await loginSuperAdmin(t);
-    const owner = await createAdminViaApi(t, 'lc_owner@example.test');
-    const thief = await createAdminViaApi(t, 'lc_thief@example.test');
-
-    const login = await loginAdmin(t, thief.email, thief.password, owner.licenseKey);
-    expect(login.status).toBe(403);
-    expect(login.body.error.code).toBe('LICENSE_INVALID');
-    expect(login.body.error.message).toMatch(/not assigned to this admin/i);
   });
 
   it('rejects an expired license at login (403)', async () => {
@@ -103,7 +95,7 @@ describe('admin license login gate (§23, §24)', () => {
       { $set: { status: 'expired', expiresAt: new Date(Date.now() - 1000) } },
     );
 
-    const login = await loginAdmin(t, admin.email, admin.password, admin.licenseKey);
+    const login = await loginAdmin(t, admin.email, admin.password);
     expect(login.status).toBe(403);
     expect(login.body.error.code).toBe('LICENSE_INVALID');
     expect(login.body.error.message).toMatch(/expired/i);
@@ -119,7 +111,7 @@ describe('admin license login gate (§23, §24)', () => {
       .send({ status: 'suspended', reason: 'Test suspension' });
     expect(suspend.status).toBe(200);
 
-    const login = await loginAdmin(t, admin.email, admin.password, admin.licenseKey);
+    const login = await loginAdmin(t, admin.email, admin.password);
     expect(login.status).toBe(403);
     expect(login.body.error.code).toBe('LICENSE_INVALID');
     expect(login.body.error.message).toMatch(/suspended/i);
@@ -135,18 +127,18 @@ describe('admin license login gate (§23, §24)', () => {
       .send({ status: 'revoked', reason: 'Test revocation' });
     expect(revoke.status).toBe(200);
 
-    const login = await loginAdmin(t, admin.email, admin.password, admin.licenseKey);
+    const login = await loginAdmin(t, admin.email, admin.password);
     expect(login.status).toBe(403);
     expect(login.body.error.code).toBe('LICENSE_INVALID');
     expect(login.body.error.message).toMatch(/revoked/i);
   });
 
-  it('does not create a session when the license is rejected', async () => {
+  it('does not create a session when the license check fails', async () => {
     const t = testApp();
     await loginSuperAdmin(t);
-    const admin = await createAdminViaApi(t, 'lc_nosession@example.test');
+    const admin = await createUnlicensedAdmin(t, 'lc_nosession@example.test');
 
-    expect((await loginAdmin(t, admin.email, admin.password, 'SMM-0000-0000-0000-0000')).status).toBe(403);
+    expect((await loginAdmin(t, admin.email, admin.password)).status).toBe(403);
 
     const me = await t.agent.get('/api/v1/auth/admin/me');
     expect(me.status).toBe(401);
@@ -161,14 +153,14 @@ describe('admin license login gate (§23, §24)', () => {
 
     await User.updateOne({ _id: admin.adminId }, { $set: { status: 'suspended' } });
 
-    const relogin = await loginAdmin(t, admin.email, admin.password, admin.licenseKey);
+    const relogin = await loginAdmin(t, admin.email, admin.password);
     expect(relogin.status).toBe(403);
 
     const superCheck = await t.agent
       .patch(`/api/v1/super-admin/admins/${admin.adminId}/status`)
       .send({ status: 'active' });
     expect(superCheck.status).toBe(200);
-    expect((await loginAdmin(t, admin.email, admin.password, admin.licenseKey)).status).toBe(200);
+    expect((await loginAdmin(t, admin.email, admin.password)).status).toBe(200);
   });
 
   it('renewing a suspended license restores login access', async () => {
@@ -177,7 +169,7 @@ describe('admin license login gate (§23, §24)', () => {
     const admin = await createAdminViaApi(t, 'lc_renew@example.test');
 
     await t.agent.patch(`/api/v1/super-admin/licenses/${admin.licenseId}/status`).send({ status: 'suspended' });
-    const blocked = await loginAdmin(t, admin.email, admin.password, admin.licenseKey);
+    const blocked = await loginAdmin(t, admin.email, admin.password);
     expect(blocked.status).toBe(403);
 
     const renew = await t.agent
@@ -186,7 +178,7 @@ describe('admin license login gate (§23, §24)', () => {
     expect(renew.status).toBe(200);
     expect(renew.body.data.license.status).toBe('active');
 
-    const relogin = await loginAdmin(t, admin.email, admin.password, admin.licenseKey);
+    const relogin = await loginAdmin(t, admin.email, admin.password);
     expect(relogin.status).toBe(200);
     expect(relogin.body.data.licenseValid).toBe(true);
     expect((await t.agent.get('/api/v1/admin/users')).status).toBe(200);
@@ -198,14 +190,14 @@ describe('admin license login gate (§23, §24)', () => {
     await loginUser(t, 'lc_ghost@example.test', PW);
     const res = await t.agent
       .post('/api/v1/auth/admin/login')
-      .send({ email: 'lc_ghost@example.test', password: PW, licenseKey: 'SMM-0000-0000-0000-0000' });
+      .send({ email: 'lc_ghost@example.test', password: PW });
     expect(res.status).toBe(403);
     expect(res.body.error.message).toMatch(/Only admin accounts/i);
   });
 
   it('rejects the Super Admin environment credentials on the admin portal (403)', async () => {
     const t = testApp();
-    const res = await loginAdmin(t, SUPER_ADMIN_EMAIL, SUPER_ADMIN_PASSWORD, 'SMM-0000-0000-0000-0000');
+    const res = await loginAdmin(t, SUPER_ADMIN_EMAIL, SUPER_ADMIN_PASSWORD);
     expect(res.status).toBe(403);
     expect(res.body.error.message).toMatch(/Only admin accounts/i);
   });

@@ -17,7 +17,9 @@ var ACCOUNT_STATUSES = {
   ACTIVE: "active",
   SUSPENDED: "suspended",
   INACTIVE: "inactive",
-  DELETED: "deleted"
+  DELETED: "deleted",
+  PENDING: "pending",
+  REJECTED: "rejected"
 };
 var LICENSE_STATUSES = {
   ACTIVE: "active",
@@ -68,10 +70,16 @@ var AUDIT_ACTIONS = {
   ADMIN_LOGIN: "admin.login",
   USER_LOGIN: "user.login",
   ADMIN_CREATE: "admin.create",
+  ADMIN_REGISTER: "admin.register",
+  ADMIN_APPROVE: "admin.approve",
+  ADMIN_REJECT: "admin.reject",
   ADMIN_UPDATE_STATUS: "admin.update_status",
   ADMIN_RESET_PASSWORD: "admin.reset_password",
   ADMIN_DELETE: "admin.delete",
   ADMIN_SUBDOMAIN_UPDATE: "admin.subdomain.update",
+  ADMIN_GOOGLE_REGISTER: "admin.google.register",
+  ADMIN_GOOGLE_LOGIN: "admin.google.login",
+  ADMIN_GOOGLE_LINK: "admin.google.link",
   LICENSE_CREATE: "license.create",
   LICENSE_UPDATE_STATUS: "license.update_status",
   LICENSE_RENEW: "license.renew",
@@ -85,10 +93,16 @@ var AUDIT_ACTIONS = {
   SERVICE_UPDATE: "service.update",
   CATEGORY_CREATE: "category.create",
   CATEGORY_UPDATE: "category.update",
+  ENGAGEMENT_BUNDLE_CREATE: "engagement_bundle.create",
+  ENGAGEMENT_BUNDLE_UPDATE: "engagement_bundle.update",
+  ENGAGEMENT_BUNDLE_DELETE: "engagement_bundle.delete",
+  ENGAGEMENT_BUNDLE_STATUS: "engagement_bundle.update_status",
   ORDER_UPDATE_STATUS: "order.update_status",
   PAYMENT_METHOD_UPDATE: "payment_method.update",
   SETTING_UPDATE: "setting.update",
   SUPER_ADMIN_CHANGED_ADMIN_THEME: "super_admin.admin_theme.change",
+  SUPER_ADMIN_CHANGED_PLATFORM_THEME: "super_admin.platform_theme.change",
+  ADMIN_CHANGED_PANEL_THEME: "admin.panel_theme.change",
   ADMIN_CHANGED_USER_THEME: "admin.user_theme.change",
   PARTIAL_ADMIN_CHANGED_USER_THEME: "partial_admin.user_theme.change",
   USER_THEME_OVERRIDE_CHANGED: "user.user_theme.override",
@@ -100,13 +114,45 @@ var AUDIT_ACTIONS = {
 };
 
 // src/user-panel-theme.ts
-var PANEL_THEMES = ["modern-light", "modern-dark", "premium-gradient"];
+var PANEL_THEMES = [
+  "modern-light",
+  "modern-dark",
+  "premium-gradient",
+  "vibrant-neon",
+  "sunset-tropical",
+  "ocean-aurora"
+];
 var DEFAULT_PANEL_THEME = "modern-light";
+var PREMIUM_PANEL_THEMES = [
+  "vibrant-neon",
+  "sunset-tropical",
+  "ocean-aurora"
+];
 var PANEL_THEME_LABELS = {
   "modern-light": "Modern Light",
   "modern-dark": "Modern Dark",
-  "premium-gradient": "Premium Gradient"
+  "premium-gradient": "Premium Gradient",
+  "vibrant-neon": "Vibrant Neon",
+  "sunset-tropical": "Sunset Tropical",
+  "ocean-aurora": "Ocean Aurora"
 };
+var PANEL_THEME_DESCRIPTIONS = {
+  "modern-light": "Clean light interface",
+  "modern-dark": "Premium navy dark mode",
+  "premium-gradient": "Warm gradient colors",
+  "vibrant-neon": "Electric purple, pink & cyan on deep space",
+  "sunset-tropical": "Warm orange, coral & pink sunsets",
+  "ocean-aurora": "Cool cyan, blue & purple northern lights"
+};
+var PANEL_THEME_SWATCHES = {
+  "modern-light": ["#4f46e5", "#6366f1", "#a5b4fc"],
+  "modern-dark": ["#6366f1", "#818cf8", "#60a5fa"],
+  "premium-gradient": ["#f97316", "#f43f5e", "#ec4899"],
+  "vibrant-neon": ["#a855f7", "#ec4899", "#22d3ee"],
+  "sunset-tropical": ["#ff8a3d", "#ff4d6d", "#ffd166"],
+  "ocean-aurora": ["#06b6d4", "#2563eb", "#8b5cf6"]
+};
+var PANEL_THEME_DARK = ["modern-dark", "vibrant-neon"];
 function isPanelTheme(value) {
   return typeof value === "string" && PANEL_THEMES.includes(value);
 }
@@ -240,10 +286,9 @@ var loginSchema = z2.object({
   email: z2.string().trim().toLowerCase().email("Enter a valid email address"),
   password: z2.string().min(1, "Password is required")
 });
-var adminLoginSchema = loginSchema.extend({
-  // Length is validated here; presence is enforced by the login service so a
-  // missing key surfaces the same LICENSE_INVALID error as an invalid one.
-  licenseKey: z2.string().trim().max(64, "License key is too long").optional().default("")
+var adminLoginSchema = z2.object({
+  email: z2.string().trim().toLowerCase().email("Enter a valid email address"),
+  password: z2.string().min(1, "Password is required")
 });
 var nameSchema = z2.string().trim().min(2, "Name must be at least 2 characters").max(120);
 var phoneSchema = z2.string().trim().min(6, "Enter a valid phone number").max(25).regex(/^[+]?[0-9 ()-]+$/, "Enter a valid phone number");
@@ -272,6 +317,10 @@ var changePasswordSchema = z2.object({
 
 // src/dto/admin.ts
 import { z as z3 } from "zod";
+var ADMIN_REQUEST_STATUSES = ["pending", "approved", "rejected"];
+var adminRequestsQuerySchema = paginationSchema.extend({
+  status: z3.enum(ADMIN_REQUEST_STATUSES).optional()
+});
 var nameSchema2 = z3.string().trim().min(2, "Name must be at least 2 characters").max(120);
 var phoneSchema2 = z3.string().trim().min(6, "Enter a valid phone number").max(25).regex(/^[+]?[0-9 ()-]+$/, "Enter a valid phone number");
 var createAdminSchema = z3.object({
@@ -303,6 +352,16 @@ var updateAdminSubdomainSchema = z3.object({
   action: z3.enum(["disable", "enable", "regenerate"], {
     errorMap: () => ({ message: "Select a subdomain action" })
   })
+});
+var approveAdminRequestSchema = z3.object({
+  licenseDurationDays: z3.number({ invalid_type_error: "Select a license duration" }).int("Duration must be a whole number of days").min(1, "Duration must be at least 1 day").max(3650, "Duration cannot exceed 3650 days").optional(),
+  maxUsers: z3.number().int().min(0).max(1e6).optional()
+}).refine((data) => data.licenseDurationDays !== void 0 === (data.maxUsers !== void 0), {
+  message: "Max users must be set together with a license duration.",
+  path: ["maxUsers"]
+});
+var rejectAdminRequestSchema = z3.object({
+  reason: z3.string().trim().min(1, "Please provide a rejection reason").max(500, "Reason is too long")
 });
 
 // src/dto/license.ts
@@ -361,6 +420,10 @@ var createOrderSchema = z6.object({
   serviceId: z6.string().trim().min(1, "Service is required"),
   link: z6.string().trim().min(4, "Enter a valid link").max(2e3),
   quantity: z6.number().int().min(1, "Quantity must be at least 1").max(1e7)
+});
+var createBundleOrderSchema = z6.object({
+  bundleId: z6.string().trim().min(1, "Bundle is required"),
+  link: z6.string().trim().min(4, "Enter a valid link").max(2e3)
 });
 var updateOrderStatusSchema = z6.object({
   status: z6.enum(["processing", "in_progress", "completed", "partial", "cancelled", "failed"]),
@@ -426,6 +489,16 @@ var updateAdminThemeSettingsSchema = z8.object({
     errorMap: () => ({ message: "Select a valid theme" })
   })
 });
+var updatePlatformThemeSchema = z8.object({
+  theme: z8.enum(PANEL_THEMES, {
+    errorMap: () => ({ message: "Select a valid theme" })
+  })
+});
+var updateAdminPanelThemeSchema = z8.object({
+  theme: z8.enum(PANEL_THEMES, {
+    errorMap: () => ({ message: "Select a valid theme" })
+  })
+});
 var createSubAdminSchema = z8.object({
   name: z8.string().trim().min(2, "Name must be at least 2 characters").max(120),
   email: z8.string().trim().toLowerCase().email("Enter a valid email address"),
@@ -455,8 +528,54 @@ var createTenantUserSchema = z8.object({
   message: "Passwords do not match",
   path: ["confirmPassword"]
 });
+
+// src/dto/engagementBundle.ts
+import { z as z9 } from "zod";
+var ENGAGEMENT_BUNDLE_TYPES = ["likes", "views", "subscribers"];
+var ENGAGEMENT_BUNDLE_STATUSES = ["active", "inactive"];
+var ENGAGEMENT_BUNDLE_CURRENCIES = ["INR", "USD", "EUR", "GBP"];
+var ENGAGEMENT_BUNDLE_TYPE_LABELS = {
+  likes: "Likes",
+  views: "Views",
+  subscribers: "Subscribers"
+};
+var priceField = z9.number().min(0, "Price must be greater than or equal to 0").max(1e6, "Price is too large").refine((v) => Math.abs(Math.round(v * 100) - v * 100) < 1e-6, {
+  message: "Price must not have more than 2 decimal places"
+});
+var displayNameField = z9.string().trim().min(2, "Display name must be at least 2 characters").max(150);
+var quantityField = z9.number().int("Quantity must be a whole number").min(1, "Quantity must be at least 1").max(1e7, "Quantity is too large");
+var createEngagementBundleSchema = z9.object({
+  type: z9.enum(ENGAGEMENT_BUNDLE_TYPES, {
+    message: "Select a valid engagement type"
+  }),
+  quantity: quantityField,
+  price: priceField,
+  currency: z9.enum(ENGAGEMENT_BUNDLE_CURRENCIES).optional().default("INR"),
+  displayName: displayNameField,
+  description: z9.string().trim().max(600).optional().default(""),
+  status: z9.enum(ENGAGEMENT_BUNDLE_STATUSES).optional().default("active"),
+  sortOrder: z9.number().int().min(0).max(9999).optional().default(0)
+});
+var updateEngagementBundleSchema = z9.object({
+  type: z9.enum(ENGAGEMENT_BUNDLE_TYPES),
+  quantity: quantityField,
+  price: priceField,
+  currency: z9.enum(ENGAGEMENT_BUNDLE_CURRENCIES),
+  displayName: displayNameField,
+  description: z9.string().trim().max(600),
+  status: z9.enum(ENGAGEMENT_BUNDLE_STATUSES),
+  sortOrder: z9.number().int().min(0).max(9999)
+}).partial().refine((data) => Object.keys(data).length > 0, { message: "No fields to update" });
+var updateEngagementBundleStatusSchema = z9.object({
+  status: z9.enum(ENGAGEMENT_BUNDLE_STATUSES)
+});
+var engagementBundlesQuerySchema = paginationSchema.extend({
+  type: z9.enum(ENGAGEMENT_BUNDLE_TYPES).optional(),
+  status: z9.enum(ENGAGEMENT_BUNDLE_STATUSES).optional()
+});
 export {
   ACCOUNT_STATUSES,
+  ADMIN_REQUEST_STATUSES,
   ADMIN_SCOPES,
   ALL_ADMIN_SCOPES,
   ALL_ROLES,
@@ -465,10 +584,18 @@ export {
   AUTH_PROVIDERS,
   ApiError,
   DEFAULT_PANEL_THEME,
+  ENGAGEMENT_BUNDLE_CURRENCIES,
+  ENGAGEMENT_BUNDLE_STATUSES,
+  ENGAGEMENT_BUNDLE_TYPES,
+  ENGAGEMENT_BUNDLE_TYPE_LABELS,
   LICENSE_STATUSES,
   ORDER_STATUSES,
   PANEL_THEMES,
+  PANEL_THEME_DARK,
+  PANEL_THEME_DESCRIPTIONS,
   PANEL_THEME_LABELS,
+  PANEL_THEME_SWATCHES,
+  PREMIUM_PANEL_THEMES,
   ROLES,
   SUBDOMAIN_SLUG_MAX_LENGTH,
   SUBDOMAIN_STATUSES,
@@ -477,17 +604,22 @@ export {
   activateLicenseSchema,
   addFundsSchema,
   adminLoginSchema,
+  adminRequestsQuerySchema,
+  approveAdminRequestSchema,
   buildSubdomainHost,
   changePasswordSchema,
   claimUserSchema,
   createAdminSchema,
+  createBundleOrderSchema,
   createCategorySchema,
+  createEngagementBundleSchema,
   createLicenseSchema,
   createOrderSchema,
   createPaymentMethodSchema,
   createServiceSchema,
   createSubAdminSchema,
   createTenantUserSchema,
+  engagementBundlesQuerySchema,
   friendlyMessage,
   hasAdminScope,
   hostNameOnly,
@@ -501,18 +633,23 @@ export {
   paginationSchema,
   passwordSchema,
   registerSchema,
+  rejectAdminRequestSchema,
   renewLicenseSchema,
   resetPasswordSchema,
   slugifySubdomainSlug,
   subdomainSlugFromHost,
+  updateAdminPanelThemeSchema,
   updateAdminStatusSchema,
   updateAdminSubdomainSchema,
   updateAdminThemeSettingsSchema,
   updateCategorySchema,
+  updateEngagementBundleSchema,
+  updateEngagementBundleStatusSchema,
   updateLicenseStatusSchema,
   updateOrderStatusSchema,
   updateOwnThemeOverrideSchema,
   updatePaymentMethodSchema,
+  updatePlatformThemeSchema,
   updateProfileSchema,
   updateServiceSchema,
   updateSettingsSchema,

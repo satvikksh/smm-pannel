@@ -151,18 +151,18 @@ export default function DashboardPage() {
           ) : activity.error ? (
             <ErrorState message={activity.error} onRetry={activity.reload} />
           ) : (activity.data ?? []).length === 0 ? (
-            <p className="text-sm text-zinc-500">No activity recorded yet.</p>
+            <p className="text-sm text-muted-foreground">No activity recorded yet.</p>
           ) : (
-            <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
+            <ul className="divide-y divide-border">
               {(activity.data ?? []).map((item) => (
                 <li key={item.id} className="flex items-center justify-between gap-3 py-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm text-zinc-800 dark:text-zinc-100">
+                    <p className="truncate text-sm text-foreground">
                       <span className="font-semibold">{item.actorName}</span>{' '}
-                      <span className="text-zinc-500">{item.action.replace(/_/g, ' ').toLowerCase()}</span>
-                      {item.targetLabel ? <span className="text-zinc-500"> · {item.targetLabel}</span> : null}
+                      <span className="text-muted-foreground">{item.action.replace(/_/g, ' ').toLowerCase()}</span>
+                      {item.targetLabel ? <span className="text-muted-foreground"> · {item.targetLabel}</span> : null}
                     </p>
-                    <p className="text-xs text-zinc-400">{formatDate(item.createdAt)}</p>
+                    <p className="text-xs text-muted-foreground">{formatDate(item.createdAt)}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge>{item.actorRole.replace(/_/g, ' ')}</Badge>

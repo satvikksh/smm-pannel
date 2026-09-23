@@ -2,11 +2,11 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   AppShell,
   Icons,
   LoadingState,
-  useTheme,
   type NavItem,
   type NavSection,
 } from '@smm/ui';
@@ -61,6 +61,7 @@ const navSections: NavSection[] = [
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: Icons.Dashboard, exact: true },
       { href: '/audit-logs', label: 'Audit logs', icon: Icons.Audit },
+      { href: '/theme', label: 'Appearance', icon: Icons.Palette },
       { href: '/settings', label: 'Platform settings', icon: Icons.Settings },
     ],
   },
@@ -68,6 +69,7 @@ const navSections: NavSection[] = [
     label: 'Management',
     items: [
       { href: '/admins', label: 'Admins', icon: Icons.Shield },
+      { href: '/requests', label: 'Requests', icon: Icons.Inbox },
       { href: '/admin-themes', label: 'Admin themes', icon: Icons.Palette },
       { href: '/licenses', label: 'Licenses', icon: Icons.License },
       { href: '/users', label: 'Users', icon: Icons.Users },
@@ -79,6 +81,7 @@ const navSections: NavSection[] = [
     items: [
       { href: '/services', label: 'Services', icon: Icons.Services },
       { href: '/categories', label: 'Categories', icon: Icons.Categories },
+      { href: '/engagement-pricing', label: 'Engagement pricing', icon: Icons.Bolt },
       { href: '/payments', label: 'Payment methods', icon: Icons.Payments },
     ],
   },
@@ -93,16 +96,23 @@ const bottomNav: NavItem[] = [
 
 function ShellFrame({ children }: { children: ReactNode }) {
   const user = useSession();
-  const { theme, toggle } = useTheme();
+  const [pendingRequests, setPendingRequests] = useState(0);
+  useEffect(() => {
+    let active = true;
+    api<{ pending: number }>('/super-admin/admin-requests/count')
+      .then((d) => { if (active) setPendingRequests(d.pending ?? 0); })
+      .catch(() => { if (active) setPendingRequests(0); });
+    return () => { active = false; };
+  }, []);
   if (!user) return null;
   const themeToggle = (
-    <button
-      onClick={toggle}
-      aria-label="Toggle theme"
-      className="rounded-xl border border-border bg-card p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+    <Link
+      href="/theme"
+      aria-label="Appearance and themes"
+      className="rounded-xl border border-border bg-card p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
     >
-      {theme === 'dark' ? <Icons.Sun className="h-4 w-4" /> : <Icons.Moon className="h-4 w-4" />}
-    </button>
+      <Icons.Palette className="h-4 w-4" />
+    </Link>
   );
   return (
     <AppShell
@@ -110,6 +120,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
       roleLabel="Super Admin"
       user={user}
       navSections={navSections}
+      navBadges={{ '/requests': pendingRequests }}
       bottomNav={bottomNav}
       themeToggle={themeToggle}
       onLogout={() => api(`/auth/${ROLE}/logout`, { method: 'POST' })}

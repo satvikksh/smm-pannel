@@ -88,6 +88,7 @@ const navSections: NavSection[] = [
       { href: '/orders', label: 'Orders', icon: Icons.Orders },
       { href: '/services', label: 'Services', icon: Icons.Services },
       { href: '/categories', label: 'Categories', icon: Icons.Categories },
+      { href: '/engagement-pricing', label: 'Engagement pricing', icon: Icons.Bolt },
       { href: '/theme', label: 'Theme', icon: Icons.Palette },
     ],
   },

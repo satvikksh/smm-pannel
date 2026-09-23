@@ -2,15 +2,18 @@
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button, Card, Field, Icons, Input } from '@smm/ui';
 import { ApiError, api, type AuthSessionState } from '@/lib/api';
 import { currentPanelHost } from '@/lib/subdomain';
+import { GoogleAuthButton } from '@/components/google-auth-button';
 
 function describeAuthError(err: unknown): string {
   if (err instanceof ApiError) {
     if (err.status >= 500) return 'The server encountered an error. Please try again.';
-    // 4xx messages come from the server and are specific to the failure
-    // (invalid credentials, missing license, invalid/expired/suspended key).
+    // 4xx messages come from the server and are specific to the failure:
+    // invalid credentials, or an admin whose account is still pending approval,
+    // rejected, blocked, or whose license is missing/invalid/suspended.
     return err.message;
   }
   return 'Cannot connect to the API server. Check your connection and try again.';
@@ -20,8 +23,6 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [licenseKey, setLicenseKey] = useState('');
-  const [showLicenseKey, setShowLicenseKey] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [panelHost, setPanelHost] = useState<string | null>(null);
@@ -39,11 +40,12 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     try {
-      // The server validates the credentials AND the license key before any
-      // session is created. There is no client-side bypass.
+      // The server validates the credentials and the admin's licence entitlement
+      // (the licence tied to the approved admin account) before any session is
+      // created. There is no client-side bypass and no manual licence entry.
       await api<AuthSessionState>('/auth/admin/login', {
         method: 'POST',
-        body: JSON.stringify({ email, password, licenseKey }),
+        body: JSON.stringify({ email, password }),
       });
       router.replace('/dashboard');
       router.refresh();
@@ -55,12 +57,12 @@ export default function LoginPage() {
 
   return (
     <Card>
-      <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">Admin sign in</h1>
-      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-        Manage users, orders and the service catalog. Your license key is required.
+      <h1 className="text-xl font-bold text-foreground">Admin sign in</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Manage users, orders and the service catalog. Your licence is validated automatically.
       </p>
       {panelHost ? (
-        <p className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
+        <p className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
           <Icons.Subdomain className="h-3.5 w-3.5" />
           {panelHost}
         </p>
@@ -89,32 +91,9 @@ export default function LoginPage() {
             placeholder="••••••••"
           />
         </Field>
-        <Field label="License key" htmlFor="licenseKey">
-          <div className="relative">
-            <Input
-              id="licenseKey"
-              type={showLicenseKey ? 'text' : 'password'}
-              autoComplete="off"
-              spellCheck={false}
-              required
-              value={licenseKey}
-              onChange={(e) => setLicenseKey(e.target.value)}
-              placeholder="SMM-XXXX-XXXX-XXXX-XXXX"
-              className="pr-11"
-            />
-            <button
-              type="button"
-              onClick={() => setShowLicenseKey((v) => !v)}
-              aria-label={showLicenseKey ? 'Hide license key' : 'Show license key'}
-              className="absolute inset-y-0 right-0 flex items-center px-3 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
-            >
-              {showLicenseKey ? <Icons.EyeOff className="h-4 w-4" /> : <Icons.Eye className="h-4 w-4" />}
-            </button>
-          </div>
-        </Field>
 
         {error ? (
-          <p className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-600 dark:bg-red-500/10 dark:text-red-400">
+          <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm font-medium text-danger">
             {error}
           </p>
         ) : null}
@@ -122,6 +101,18 @@ export default function LoginPage() {
         <Button type="submit" fullWidth loading={loading}>
           Sign in
         </Button>
+
+        <GoogleAuthButton />
+
+        <p className="text-center text-sm text-muted-foreground">
+          New to the panel?{' '}
+          <Link
+            href="/register"
+            className="font-semibold text-primary hover:underline"
+          >
+            Create admin account
+          </Link>
+        </p>
       </form>
     </Card>
   );

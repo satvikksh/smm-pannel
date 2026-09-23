@@ -33,6 +33,12 @@ export function withSession(session: RunnerSession): { session: mongoose.ClientS
 /**
  * Run fn inside a transaction when the deployment supports it; otherwise run
  * it sequentially (local standalone dev). fn receives the session (or null).
+ *
+ * Uses `session.withTransaction()` rather than a manual start/commit sequence:
+ * withTransaction retries the callback on TransientTransactionError and retries
+ * the commit on UnknownTransactionCommitResult. A manual sequence let an
+ * aborted transaction surface as `NoSuchTransaction` (code 251) and bubble up
+ * as an unhandled 500 instead of being retried.
  */
 export async function runInTransaction<T>(fn: (session: RunnerSession) => Promise<T>): Promise<T> {
   const supported = await serverSupportsTransactions();
@@ -40,15 +46,9 @@ export async function runInTransaction<T>(fn: (session: RunnerSession) => Promis
     return fn(null);
   }
   const session = await mongoose.startSession();
-  session.startTransaction();
   try {
-    const result = await fn(session);
-    await session.commitTransaction();
-    return result;
-  } catch (err) {
-    await session.abortTransaction().catch(() => undefined);
-    throw err;
+    return await session.withTransaction<T>(() => fn(session));
   } finally {
-    await session.endSession();
+    await session.endSession().catch(() => undefined);
   }
 }

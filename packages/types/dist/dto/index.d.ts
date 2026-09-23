@@ -5,4 +5,5 @@ export * from './catalog';
 export * from './order';
 export * from './wallet';
 export * from './settings';
+export * from './engagementBundle';
 export * from './common';

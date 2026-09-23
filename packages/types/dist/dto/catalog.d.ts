@@ -6,14 +6,14 @@ export declare const createCategorySchema: z.ZodObject<{
     sortOrder: z.ZodDefault<z.ZodOptional<z.ZodNumber>>;
 }, "strip", z.ZodTypeAny, {
     status: "active" | "inactive";
+    sortOrder: number;
     name: string;
     icon: string;
-    sortOrder: number;
 }, {
     name: string;
     status?: "active" | "inactive" | undefined;
-    icon?: string | undefined;
     sortOrder?: number | undefined;
+    icon?: string | undefined;
 }>;
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
 export declare const updateCategorySchema: z.ZodObject<{
@@ -23,14 +23,14 @@ export declare const updateCategorySchema: z.ZodObject<{
     sortOrder: z.ZodOptional<z.ZodDefault<z.ZodOptional<z.ZodNumber>>>;
 }, "strip", z.ZodTypeAny, {
     status?: "active" | "inactive" | undefined;
+    sortOrder?: number | undefined;
     name?: string | undefined;
     icon?: string | undefined;
-    sortOrder?: number | undefined;
 }, {
     status?: "active" | "inactive" | undefined;
+    sortOrder?: number | undefined;
     name?: string | undefined;
     icon?: string | undefined;
-    sortOrder?: number | undefined;
 }>;
 export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>;
 export declare const createServiceSchema: z.ZodEffects<z.ZodObject<{
@@ -43,32 +43,32 @@ export declare const createServiceSchema: z.ZodEffects<z.ZodObject<{
     status: z.ZodDefault<z.ZodOptional<z.ZodEnum<["active", "inactive"]>>>;
 }, "strip", z.ZodTypeAny, {
     status: "active" | "inactive";
+    price: number;
+    description: string;
     name: string;
     categoryId: string;
-    description: string;
-    price: number;
     minOrder: number;
     maxOrder: number;
 }, {
+    price: number;
     name: string;
     categoryId: string;
-    price: number;
     minOrder: number;
     maxOrder: number;
     status?: "active" | "inactive" | undefined;
     description?: string | undefined;
 }>, {
     status: "active" | "inactive";
+    price: number;
+    description: string;
     name: string;
     categoryId: string;
-    description: string;
-    price: number;
     minOrder: number;
     maxOrder: number;
 }, {
+    price: number;
     name: string;
     categoryId: string;
-    price: number;
     minOrder: number;
     maxOrder: number;
     status?: "active" | "inactive" | undefined;
@@ -85,34 +85,34 @@ export declare const updateServiceSchema: z.ZodEffects<z.ZodObject<{
     status: z.ZodOptional<z.ZodEnum<["active", "inactive"]>>;
 }, "strip", z.ZodTypeAny, {
     status?: "active" | "inactive" | undefined;
+    price?: number | undefined;
+    description?: string | undefined;
     name?: string | undefined;
     categoryId?: string | undefined;
-    description?: string | undefined;
-    price?: number | undefined;
     minOrder?: number | undefined;
     maxOrder?: number | undefined;
 }, {
     status?: "active" | "inactive" | undefined;
+    price?: number | undefined;
+    description?: string | undefined;
     name?: string | undefined;
     categoryId?: string | undefined;
-    description?: string | undefined;
-    price?: number | undefined;
     minOrder?: number | undefined;
     maxOrder?: number | undefined;
 }>, {
     status?: "active" | "inactive" | undefined;
+    price?: number | undefined;
+    description?: string | undefined;
     name?: string | undefined;
     categoryId?: string | undefined;
-    description?: string | undefined;
-    price?: number | undefined;
     minOrder?: number | undefined;
     maxOrder?: number | undefined;
 }, {
     status?: "active" | "inactive" | undefined;
+    price?: number | undefined;
+    description?: string | undefined;
     name?: string | undefined;
     categoryId?: string | undefined;
-    description?: string | undefined;
-    price?: number | undefined;
     minOrder?: number | undefined;
     maxOrder?: number | undefined;
 }>;

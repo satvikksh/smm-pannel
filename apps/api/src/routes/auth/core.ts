@@ -29,18 +29,20 @@ async function findUserByEmail(email: string): Promise<UserRecord | null> {
 }
 
 /**
- * Validate an admin's license key at sign-in and bind it to their account.
+ * Validate an admin at sign-in and bind their tenant license to the account.
  * Fails closed with a specific, non-leaky message for every failure mode: no
- * license assigned, unknown key, another admin's key, or a lapsed/suspended/
- * revoked license. On success the admin's `licenseId` is persisted so licensed
- * routes unlock for the whole session.
+ * license assigned, or a lapsed/suspended/revoked license. On success the
+ * admin's `licenseId` is persisted so licensed routes unlock for the whole
+ * session.
  *
- * Sub Admins authenticate on their tenant's panel using the tenant license key;
- * the license is matched against the tenant Main Admin (`parentAdminId`).
+ * The licenseKey is no longer typed by the admin: the license assigned to the
+ * account (the tenant Main Admin's license) is detected directly from the
+ * database. Sub Admins authenticate on their tenant's panel and inherit the
+ * tenant license of their `parentAdminId`; the binding is copied onto the
+ * signing-in account so `adminLicenseVerdict` holds for Sub Admins too.
  */
 async function assertAdminLicenseAtLogin(
   user: UserRecord,
-  rawLicenseKey: string | undefined,
   requestedSubdomainSlug: string | null,
 ): Promise<LicenseRecord> {
   const tenantAdmin = await resolveTenantAdminUser(user);
@@ -48,22 +50,9 @@ async function assertAdminLicenseAtLogin(
   // The subdomain, when present, must belong to the tenant signing in.
   assertAdminSubdomainMatches(tenantAdmin, requestedSubdomainSlug);
 
-  const owned = await License.findOne({ adminUserId: tenantAdmin._id }).lean();
-  if (!owned) {
-    throw ApiError.licenseInvalid('No license is assigned to this admin. Please contact the Super Admin.');
-  }
-
-  const licenseKey = (rawLicenseKey ?? '').trim().toUpperCase();
-  if (!licenseKey) {
-    throw ApiError.licenseInvalid('License key is required.');
-  }
-
-  const license = await License.findOne({ licenseKey }).lean();
+  const license = await License.findOne({ adminUserId: tenantAdmin._id }).lean();
   if (!license) {
-    throw ApiError.licenseInvalid('Invalid license key.');
-  }
-  if (String(license.adminUserId) !== String(tenantAdmin._id)) {
-    throw ApiError.licenseInvalid('License is not assigned to this admin.');
+    throw ApiError.licenseInvalid('No license is assigned to this admin. Please contact the Super Admin.');
   }
 
   const err = licenseError(license);
@@ -71,14 +60,16 @@ async function assertAdminLicenseAtLogin(
     throw ApiError.licenseInvalid(err.message);
   }
 
-  await User.updateOne({ _id: user._id }, { $set: { licenseId: license._id } });
+  if (!user.licenseId || String(user.licenseId) !== String(license._id)) {
+    await User.updateOne({ _id: user._id }, { $set: { licenseId: license._id } });
+  }
   user.licenseId = license._id;
   return license;
 }
 
 export async function doLogin(
   role: Role,
-  body: { email: string; password: string; licenseKey?: string },
+  body: { email: string; password: string },
   requestedSubdomainSlug: string | null = null,
 ): Promise<{
   user: UserRecord;
@@ -120,13 +111,16 @@ export async function doLogin(
       : ApiError.unauthorized('Invalid email or password');
   }
 
+  // Blocks pending/rejected/suspended/inactive/deleted accounts with the exact
+  // server message (a rejected admin is told the reason kept by the Super Admin).
   await assertAccountAccess(user, role);
 
-  // The ADMIN portal requires a valid, active license whose key the admin
-  // supplies at sign-in. No session is issued unless the key is verified and
-  // bound to the account. The User portal has no license concept.
+  // The ADMIN portal requires a valid, active license assigned to the account.
+  // No session is issued unless the tenant license is verified and bound. An
+  // approved-but-unlicensed admin is told the license is missing and must be
+  // issued by the Super Admin. The User portal has no license concept.
   if (role === ROLES.ADMIN) {
-    const license = await assertAdminLicenseAtLogin(user, body.licenseKey, requestedSubdomainSlug);
+    const license = await assertAdminLicenseAtLogin(user, requestedSubdomainSlug);
     return { user, license };
   }
   return { user, license: null };
@@ -158,7 +152,7 @@ export function meHandler(role: Role) {
 
 export function loginHandler(role: Role, auditAction?: string) {
   return async (req: Request, res: Response): Promise<void> => {
-    const body = req.body as { email: string; password: string; licenseKey?: string };
+    const body = req.body as { email: string; password: string };
     const { user, license } = await doLogin(role, body, requestedAdminSubdomain(req));
     await issueSession(user, role, res);
     if (auditAction) {

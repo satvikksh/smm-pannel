@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import type { OrderStatus } from '@smm/types';
+import type { EngagementBundleType, OrderStatus } from '@smm/types';
 export interface OrderRecord {
     _id: mongoose.Types.ObjectId;
     userId: mongoose.Types.ObjectId;
@@ -12,6 +12,10 @@ export interface OrderRecord {
     status: OrderStatus;
     startCounter: number;
     remaining: number;
+    /** Engagement bundle that priced this order (null for catalog services). */
+    bundleId: mongoose.Types.ObjectId | null;
+    bundleType: EngagementBundleType | null;
+    currency: string | null;
     createdAt: Date;
     updatedAt: Date;
 }

@@ -7,6 +7,8 @@ export { default as Category } from './models/category';
 export type { CategoryRecord } from './models/category';
 export { default as Service } from './models/service';
 export type { ServiceRecord } from './models/service';
+export { default as EngagementBundle } from './models/engagementBundle';
+export type { EngagementBundleRecord } from './models/engagementBundle';
 export { default as Order } from './models/order';
 export type { OrderRecord } from './models/order';
 export { default as Transaction } from './models/transaction';
@@ -32,3 +34,5 @@ export type { AdminThemeSettingsRecord, AdminThemeSettingsValue, } from './model
 export { getAdminThemeSettings, setAdminThemeSettings } from './models/adminThemeSettings';
 export { resolveUserPanelTheme, tenantAllowedThemes } from './theme';
 export type { ThemeResolutionUser } from './theme';
+export { getPlatformTheme, getPlatformThemeMeta, setPlatformTheme } from './platformTheme';
+export type { PlatformThemeMeta } from './platformTheme';

@@ -77,6 +77,28 @@ export const updateAdminThemeSettingsSchema = z.object({
 
 export type UpdateAdminThemeSettingsInput = z.infer<typeof updateAdminThemeSettingsSchema>;
 
+/**
+ * Global platform theme selected by the Super Admin on the Appearance page.
+ * The selection is rolled out as the default for every admin panel and every
+ * tenant's user panel.
+ */
+export const updatePlatformThemeSchema = z.object({
+  theme: z.enum(PANEL_THEMES, {
+    errorMap: () => ({ message: 'Select a valid theme' }),
+  }),
+});
+
+export type UpdatePlatformThemeInput = z.infer<typeof updatePlatformThemeSchema>;
+
+/** Main Admin picks the theme for their own Admin Panel (enabled set enforced server-side). */
+export const updateAdminPanelThemeSchema = z.object({
+  theme: z.enum(PANEL_THEMES, {
+    errorMap: () => ({ message: 'Select a valid theme' }),
+  }),
+});
+
+export type UpdateAdminPanelThemeInput = z.infer<typeof updateAdminPanelThemeSchema>;
+
 /** Main Admin creates a Sub Admin under their tenant. */
 export const createSubAdminSchema = z
   .object({

@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 const { Schema, model, models } = mongoose;
-import type { OrderStatus } from '@smm/types';
+import type { EngagementBundleType, OrderStatus } from '@smm/types';
 
 export interface OrderRecord {
   _id: mongoose.Types.ObjectId;
@@ -14,6 +14,10 @@ export interface OrderRecord {
   status: OrderStatus;
   startCounter: number;
   remaining: number;
+  /** Engagement bundle that priced this order (null for catalog services). */
+  bundleId: mongoose.Types.ObjectId | null;
+  bundleType: EngagementBundleType | null;
+  currency: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -35,6 +39,9 @@ const orderSchema = new Schema<OrderRecord>(
     },
     startCounter: { type: Number, default: 0, min: 0 },
     remaining: { type: Number, default: 0, min: 0 },
+    bundleId: { type: Schema.Types.ObjectId, ref: 'EngagementBundle', default: null, index: true },
+    bundleType: { type: String, enum: ['likes', 'views', 'subscribers'], default: null },
+    currency: { type: String, default: null, trim: true },
   },
   { timestamps: true, versionKey: false },
 );

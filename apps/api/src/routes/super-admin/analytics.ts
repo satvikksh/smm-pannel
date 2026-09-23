@@ -6,12 +6,13 @@ export function superAdminAnalyticsRouter(): Router {
   const router = Router();
 
   router.get('/overview', async (_req, res) => {
-    const [totalUsers, totalAdmins, activeAdmins, suspendedAdmins, activeLicenses, expiredLicenses] =
+    const [totalUsers, totalAdmins, activeAdmins, suspendedAdmins, pendingAdminRequests, activeLicenses, expiredLicenses] =
       await Promise.all([
         User.countDocuments({ role: ROLES.USER }),
         User.countDocuments({ role: ROLES.ADMIN }),
         User.countDocuments({ role: ROLES.ADMIN, status: 'active' }),
         User.countDocuments({ role: ROLES.ADMIN, status: 'suspended' }),
+        User.countDocuments({ role: ROLES.ADMIN, status: 'pending' }),
         License.countDocuments({ status: 'active', expiresAt: { $gt: new Date() } }),
         License.countDocuments({ $or: [{ status: 'expired' }, { expiresAt: { $lte: new Date() } }] }),
       ]);
@@ -75,6 +76,7 @@ export function superAdminAnalyticsRouter(): Router {
         totalAdmins,
         activeAdmins,
         suspendedAdmins,
+        pendingAdminRequests,
         activeLicenses,
         expiredLicenses,
         revenue: revenueAgg[0]?.total ?? 0,
